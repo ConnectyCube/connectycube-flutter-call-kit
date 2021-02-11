@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.connectycube.flutter.connectycube_flutter_call_kit">
+
+    <application>
+        <receiver android:name=".EventReceiver" />
+        <activity
+            android:name=".IncomingCallActivity"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:screenOrientation="sensorPortrait"
+            android:taskAffinity="com.connectycube.flutter.connectycube_flutter_call_kit.INCOMING_CALL_AFFINITY"
+            android:theme="@android:style/Theme.Holo.NoActionBar" />
+    </application>
+</manifest>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="decline_call_btn">#E02B00</color>
+    <color name="accept_call_btn">#4CB050</color>
+</resources>
