@@ -2,4 +2,5 @@
 <resources>
     <color name="decline_call_btn">#E02B00</color>
     <color name="accept_call_btn">#4CB050</color>
+    <color name="call_notification_color_accent">#4CAF50</color>
 </resources>

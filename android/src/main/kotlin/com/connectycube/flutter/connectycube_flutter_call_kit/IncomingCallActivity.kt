@@ -14,32 +14,29 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import io.flutter.Log
 
 
 fun createStartIncomingScreenIntent(context: Context, callId: String, callType: Int, callInitiatorId: Int,
-                                    callInitiatorName: String?): Intent {
+                                    callInitiatorName: String, opponents: ArrayList<Int>): Intent {
     val intent = Intent(context, IncomingCallActivity::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     intent.putExtra(EXTRA_CALL_ID, callId)
     intent.putExtra(EXTRA_CALL_TYPE, callType)
     intent.putExtra(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
     intent.putExtra(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+    intent.putIntegerArrayListExtra(EXTRA_CALL_OPPONENTS, opponents)
     return intent
 }
 
 class IncomingCallActivity : Activity() {
-
-
-    private var callStateReceiver: BroadcastReceiver? = null
-    private var localBroadcastManager: LocalBroadcastManager? = null
+    private lateinit var callStateReceiver: BroadcastReceiver
+    private lateinit var localBroadcastManager: LocalBroadcastManager
 
     private var callId: String? = null
-    private var callType: Int? = null
-    private var callInitiatorId: Int? = null
+    private var callType = -1
+    private var callInitiatorId = -1
     private var callInitiatorName: String? = null
-
-
+    private var callOpponents: ArrayList<Int>? = ArrayList()
 
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
@@ -59,12 +56,6 @@ class IncomingCallActivity : Activity() {
         initUi()
         initCallStateReceiver()
         registerCallStateReceiver()
-        Log.d("IncomingCallActivity", "onCreate(), callId = $callId")
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        Log.d("IncomingCallActivity", "onNewIntent, extras = " + intent.getExtras())
     }
 
     private fun initCallStateReceiver() {
@@ -73,21 +64,13 @@ class IncomingCallActivity : Activity() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent == null || TextUtils.isEmpty(intent.action)) return
                 val action: String? = intent.action
-                Log.d("IncomingCallActivity", "onReceive(), action  = $action")
-                if (ACTION_CALL_REJECT != action
-                        && ACTION_CALL_ACCEPT != action
-                        && ACTION_CALL_NOTIFICATION_CANCELED != action) {
-                    return
-                }
-                val callIdToProcess: String = intent.getStringExtra(EXTRA_CALL_ID)
-                Log.d("IncomingCallActivity", "onReceive(), callId = $callIdToProcess")
+
+                val callIdToProcess: String? = intent.getStringExtra(EXTRA_CALL_ID)
                 if (TextUtils.isEmpty(callIdToProcess) || callIdToProcess != callId) {
-                    Log.d("IncomingCallActivity", "ignore action for call $callIdToProcess")
                     return
                 }
                 when (action) {
-                    ACTION_CALL_NOTIFICATION_CANCELED, ACTION_CALL_REJECT -> {
-                        Log.d("IncomingCallActivity", "finishAndRemoveTask()")
+                    ACTION_CALL_NOTIFICATION_CANCELED, ACTION_CALL_REJECT, ACTION_CALL_ENDED -> {
                         finishAndRemoveTask()
                     }
                     ACTION_CALL_ACCEPT -> finishDelayed()
@@ -97,9 +80,7 @@ class IncomingCallActivity : Activity() {
     }
 
     private fun finishDelayed() {
-        Log.d("IncomingCallActivity", "finishDelayed()")
         Handler(Looper.getMainLooper()).postDelayed({
-            Log.d("IncomingCallActivity", "run finishAndRemoveTask()")
             finishAndRemoveTask()
         }, 1000)
     }
@@ -109,16 +90,16 @@ class IncomingCallActivity : Activity() {
         intentFilter.addAction(ACTION_CALL_NOTIFICATION_CANCELED)
         intentFilter.addAction(ACTION_CALL_REJECT)
         intentFilter.addAction(ACTION_CALL_ACCEPT)
-        localBroadcastManager?.registerReceiver(callStateReceiver!!, intentFilter)
+        intentFilter.addAction(ACTION_CALL_ENDED)
+        localBroadcastManager.registerReceiver(callStateReceiver, intentFilter)
     }
 
     private fun unRegisterCallStateReceiver() {
-        localBroadcastManager?.unregisterReceiver(callStateReceiver!!)
+        localBroadcastManager.unregisterReceiver(callStateReceiver)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("IncomingCallActivity", "onDestroy")
         unRegisterCallStateReceiver()
     }
 
@@ -127,6 +108,7 @@ class IncomingCallActivity : Activity() {
         callType = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
         callInitiatorId = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
         callInitiatorName = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
+        callOpponents = intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)
     }
 
     private fun initUi() {
@@ -136,12 +118,14 @@ class IncomingCallActivity : Activity() {
         callSubTitleTxt.text = String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
     }
 
+    // calls from layout file
     fun onEndCall(view: View?) {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
-        bundle.putInt(EXTRA_CALL_TYPE, callType!!)
-        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId!!)
+        bundle.putInt(EXTRA_CALL_TYPE, callType)
+        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+        bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
 
         val endCallIntent = Intent(this, EventReceiver::class.java)
         endCallIntent.action = ACTION_CALL_REJECT
@@ -149,16 +133,18 @@ class IncomingCallActivity : Activity() {
         applicationContext.sendBroadcast(endCallIntent)
     }
 
+    // calls from layout file
     fun onStartCall(view: View?) {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
-        bundle.putInt(EXTRA_CALL_TYPE, callType!!)
-        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId!!)
+        bundle.putInt(EXTRA_CALL_TYPE, callType)
+        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+        bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
 
-        val endCallIntent = Intent(this, EventReceiver::class.java)
-        endCallIntent.action = ACTION_CALL_ACCEPT
-        endCallIntent.putExtras(bundle)
-        applicationContext.sendBroadcast(endCallIntent)
+        val startCallIntent = Intent(this, EventReceiver::class.java)
+        startCallIntent.action = ACTION_CALL_ACCEPT
+        startCallIntent.putExtras(bundle)
+        applicationContext.sendBroadcast(startCallIntent)
     }
 }

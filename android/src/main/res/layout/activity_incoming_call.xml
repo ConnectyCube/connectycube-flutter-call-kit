@@ -3,14 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:orientation="vertical">
 
     <ImageView
         android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/cc_splash"/>
+        android:src="@drawable/cc_splash"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/user_name_txt"
@@ -37,7 +38,6 @@
         android:textColor="@android:color/holo_green_dark"
         android:textSize="24sp"
         tools:text="Incoming audio call" />
-
 
     <LinearLayout
         android:layout_width="match_parent"
