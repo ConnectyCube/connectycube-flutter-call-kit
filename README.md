@@ -1,15 +1,8 @@
 # connectycube_flutter_call_kit
 
-A new flutter plugin project.
+A Flutter plugin for displaying call screen when the app in the background or terminated.
 
-## Getting Started
+At the current moment implemented support only for the Android platform
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
+<kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png" height="440" /></kbd>
+<kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd>
