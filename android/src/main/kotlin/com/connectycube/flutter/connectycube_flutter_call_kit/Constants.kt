@@ -5,6 +5,7 @@ const val EXTRA_CALL_TYPE = "extra_call_type"
 const val EXTRA_CALL_INITIATOR_ID = "extra_call_initiator_id"
 const val EXTRA_CALL_INITIATOR_NAME = "extra_call_initiator_name"
 const val EXTRA_CALL_OPPONENTS = "extra_call_opponents"
+const val EXTRA_CALL_USER_INFO = "extra_call_user_info"
 
 const val ACTION_CALL_ACCEPT = "action_call_accept"
 const val ACTION_CALL_REJECT = "action_call_reject"

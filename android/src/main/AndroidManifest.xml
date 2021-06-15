@@ -8,7 +8,10 @@
             android:excludeFromRecents="true"
             android:noHistory="true"
             android:screenOrientation="sensorPortrait"
+            android:showOnLockScreen="true"
+            android:showWhenLocked="true"
             android:taskAffinity="com.connectycube.flutter.connectycube_flutter_call_kit.INCOMING_CALL_AFFINITY"
-            android:theme="@android:style/Theme.Holo.NoActionBar" />
+            android:theme="@android:style/Theme.Holo.NoActionBar"
+            android:turnScreenOn="true" />
     </application>
 </manifest>
