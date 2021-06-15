@@ -24,6 +24,7 @@ class EventReceiver : BroadcastReceiver() {
                 val callInitiatorId = extras?.getInt(EXTRA_CALL_INITIATOR_ID)
                 val callInitiatorName = extras?.getString(EXTRA_CALL_INITIATOR_NAME)
                 val callOpponents = extras?.getIntegerArrayList(EXTRA_CALL_OPPONENTS)
+                val userInfo = extras?.getString(EXTRA_CALL_USER_INFO)
                 Log.i(TAG, "NotificationReceiver onReceive Call REJECT, callId: $callId")
 
                 val broadcastIntent = Intent(ACTION_CALL_REJECT)
@@ -33,10 +34,11 @@ class EventReceiver : BroadcastReceiver() {
                 bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId!!)
                 bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
                 bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+                bundle.putString(EXTRA_CALL_USER_INFO, userInfo)
                 broadcastIntent.putExtras(bundle)
 
                 LocalBroadcastManager.getInstance(context.applicationContext)
-                        .sendBroadcast(broadcastIntent)
+                    .sendBroadcast(broadcastIntent)
 
                 NotificationManagerCompat.from(context).cancel(callId.hashCode())
             }
@@ -48,6 +50,7 @@ class EventReceiver : BroadcastReceiver() {
                 val callInitiatorId = extras?.getInt(EXTRA_CALL_INITIATOR_ID)
                 val callInitiatorName = extras?.getString(EXTRA_CALL_INITIATOR_NAME)
                 val callOpponents = extras?.getIntegerArrayList(EXTRA_CALL_OPPONENTS)
+                val userInfo = extras?.getString(EXTRA_CALL_USER_INFO)
                 Log.i(TAG, "NotificationReceiver onReceive Call ACCEPT, callId: $callId")
 
                 val broadcastIntent = Intent(ACTION_CALL_ACCEPT)
@@ -57,10 +60,11 @@ class EventReceiver : BroadcastReceiver() {
                 bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId!!)
                 bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
                 bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+                bundle.putString(EXTRA_CALL_USER_INFO, userInfo)
                 broadcastIntent.putExtras(bundle)
 
                 LocalBroadcastManager.getInstance(context.applicationContext)
-                        .sendBroadcast(broadcastIntent)
+                    .sendBroadcast(broadcastIntent)
 
                 NotificationManagerCompat.from(context).cancel(callId.hashCode())
             }
@@ -71,9 +75,18 @@ class EventReceiver : BroadcastReceiver() {
                 val callType = extras?.getInt(EXTRA_CALL_TYPE)
                 val callInitiatorId = extras?.getInt(EXTRA_CALL_INITIATOR_ID)
                 val callInitiatorName = extras?.getString(EXTRA_CALL_INITIATOR_NAME)
-                Log.i(TAG, "NotificationReceiver onReceive Delete Call Notification, callId: $callId")
+                val userInfo = extras?.getString(EXTRA_CALL_USER_INFO)
+                Log.i(
+                    TAG,
+                    "NotificationReceiver onReceive Delete Call Notification, callId: $callId"
+                )
                 LocalBroadcastManager.getInstance(context.applicationContext)
-                        .sendBroadcast(Intent(ACTION_CALL_NOTIFICATION_CANCELED).putExtra(EXTRA_CALL_ID, callId))
+                    .sendBroadcast(
+                        Intent(ACTION_CALL_NOTIFICATION_CANCELED).putExtra(
+                            EXTRA_CALL_ID,
+                            callId
+                        )
+                    )
             }
         }
     }

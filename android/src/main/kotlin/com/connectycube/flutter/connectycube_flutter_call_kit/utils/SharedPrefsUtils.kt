@@ -75,3 +75,9 @@ fun getDouble(context: Context, key: String): Double {
         0.0
     } else value!!.toDouble()
 }
+
+fun remove(context: Context, key: String) {
+    initPreferences(context)
+    editor!!.remove(key)
+    editor!!.commit()
+}
