@@ -49,14 +49,12 @@ class CallEvent {
 
   Map<String, Object?> toMap() {
     return {
-      'sessionId': sessionId,
-      'callType': callType,
-      'callerId': callerId,
-      'callerName': callerName,
-      'opponentsIds': opponentsIds
-        ..join(',')
-        ..toList(growable: false),
-      'userInfo': jsonEncode(userInfo ?? <String, String>{}),
+      'session_id': sessionId,
+      'call_type': callType,
+      'caller_id': callerId,
+      'caller_name': callerName,
+      'call_opponents': opponentsIds.join(','),
+      'user_info': jsonEncode(userInfo ?? <String, String>{}),
     };
   }
 
