@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="210dp"
         android:ellipsize="end"
         android:lines="1"
         android:padding="8dp"
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="220dp"
+        android:layout_marginBottom="200dp"
         android:gravity="center_horizontal">
 
         <ImageView
