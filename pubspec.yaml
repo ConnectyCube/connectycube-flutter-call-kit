@@ -12,6 +12,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  universal_io: ^2.0.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
