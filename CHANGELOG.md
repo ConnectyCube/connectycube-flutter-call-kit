@@ -1,3 +1,7 @@
+## 0.1.0-dev.2
+
+* Improved compatibility with projects which support Web platform.
+
 ## 0.1.0-dev.1
 
 * New:
