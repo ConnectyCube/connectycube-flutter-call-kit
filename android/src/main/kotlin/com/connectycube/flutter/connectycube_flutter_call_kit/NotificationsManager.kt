@@ -275,7 +275,7 @@ fun createCallNotificationChannel(notificationManager: NotificationManagerCompat
         )
         channel.setSound(
             sound, AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
                 .build()
         )
