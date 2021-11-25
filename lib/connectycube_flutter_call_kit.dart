@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:universal_io/io.dart';
 
 import 'package:flutter/services.dart';
@@ -14,8 +15,10 @@ typedef Future<dynamic> CallEventHandler(
 );
 
 class ConnectycubeFlutterCallKit {
-  static const MethodChannel _channel =
+  static const MethodChannel _methodChannel =
       const MethodChannel('connectycube_flutter_call_kit');
+  static const EventChannel _eventChannel =
+      const EventChannel('connectycube_flutter_call_kit.event_channel');
 
   static ConnectycubeFlutterCallKit get instance => _getInstance();
   static ConnectycubeFlutterCallKit? _instance;
@@ -31,6 +34,8 @@ class ConnectycubeFlutterCallKit {
   factory ConnectycubeFlutterCallKit() => _getInstance();
 
   ConnectycubeFlutterCallKit._internal();
+
+  static Function(String voipToken)? onVoipTokenReceived;
 
   static Function(
     String sessionId,
@@ -60,10 +65,27 @@ class ConnectycubeFlutterCallKit {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
     initMessagesHandler();
+    initEventsHandler();
   }
 
   static void initMessagesHandler() {
-    _channel.setMethodCallHandler(_handleMethod);
+    _methodChannel.setMethodCallHandler(_handleMethod);
+  }
+
+  static void initEventsHandler() {
+    _eventChannel.receiveBroadcastStream().listen((rawData) {
+      final eventData = Map<String, dynamic>.from(rawData);
+
+      _processEvent(eventData);
+    });
+  }
+
+  /// Returns VoIP token for iOS plaform.
+  /// Returns null for the Amndroid platform
+  static Future<String?> getVoipToken() {
+    return _methodChannel.invokeMethod('getVoipToken').then((result) {
+      return result?.toString();
+    });
   }
 
   static Future<void> showCallNotification({
@@ -76,7 +98,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return;
 
-    return _channel.invokeMethod("showCallNotification", {
+    return _methodChannel.invokeMethod("showCallNotification", {
       'session_id': sessionId,
       'call_type': callType,
       'caller_id': callerId,
@@ -91,7 +113,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return;
 
-    return _channel.invokeMethod("reportCallAccepted", {
+    return _methodChannel.invokeMethod("reportCallAccepted", {
       'session_id': sessionId,
     });
   }
@@ -101,7 +123,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return;
 
-    return _channel.invokeMethod("reportCallEnded", {
+    return _methodChannel.invokeMethod("reportCallEnded", {
       'session_id': sessionId,
     });
   }
@@ -111,7 +133,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return Future.value(CallState.UNKNOWN);
 
-    return _channel.invokeMethod("getCallState", {
+    return _methodChannel.invokeMethod("getCallState", {
       'session_id': sessionId,
     }).then((state) {
       return state.toString();
@@ -122,7 +144,7 @@ class ConnectycubeFlutterCallKit {
     required String? sessionId,
     required String? callState,
   }) async {
-    return _channel.invokeMethod("setCallState", {
+    return _methodChannel.invokeMethod("setCallState", {
       'session_id': sessionId,
       'call_state': callState,
     });
@@ -133,7 +155,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return Future.value();
 
-    return _channel.invokeMethod("getCallData", {
+    return _methodChannel.invokeMethod("getCallData", {
       'session_id': sessionId,
     }).then((data) {
       if (data == null) {
@@ -148,7 +170,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return Future.value();
 
-    return _channel.invokeMethod("clearCallData", {
+    return _methodChannel.invokeMethod("clearCallData", {
       'session_id': sessionId,
     });
   }
@@ -156,7 +178,7 @@ class ConnectycubeFlutterCallKit {
   static Future<String?> getLastCallId() async {
     if (!Platform.isAndroid) return Future.value();
 
-    return _channel.invokeMethod("getLastCallId");
+    return _methodChannel.invokeMethod("getLastCallId");
   }
 
   static Future<void> setOnLockScreenVisibility({
@@ -164,7 +186,7 @@ class ConnectycubeFlutterCallKit {
   }) async {
     if (!Platform.isAndroid) return;
 
-    return _channel.invokeMethod("setOnLockScreenVisibility", {
+    return _methodChannel.invokeMethod("setOnLockScreenVisibility", {
       'is_visible': isVisible,
     });
   }
@@ -248,6 +270,39 @@ class ConnectycubeFlutterCallKit {
     }
 
     return Future.value();
+  }
+
+  static void _processEvent(Map<String, dynamic> eventData) {
+    log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
+
+    final event = eventData["event"] as String?;
+
+    switch (event) {
+      case 'voipToken':
+        onVoipTokenReceived?.call(eventData['voipToken']);
+        break;
+
+      case '':
+        break;
+
+      case '':
+        break;
+
+      case '':
+        break;
+
+      case '':
+        break;
+
+      case '':
+        break;
+
+      case '':
+        break;
+
+      default:
+        throw Exception("Unrecognized event");
+    }
   }
 }
 

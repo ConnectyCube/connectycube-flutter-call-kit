@@ -32,14 +32,14 @@ class VoIPController : NSObject{
 extension VoIPController: PKPushRegistryDelegate {
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
         if pushCredentials.token.count == 0 {
-                    print("[SwiftConnectycubeFlutterCallKitPlugin][pushRegistry] No device token!")
-                    return
-                }
-                
-                print("[SwiftConnectycubeFlutterCallKitPlugin][pushRegistry] token: \(pushCredentials.token)")
+            print("[VoIPController][pushRegistry] No device token!")
+            return
+        }
 
-                let deviceToken: String = pushCredentials.token.reduce("", {$0 + String(format: "%02X", $1) })
-                print("[SwiftConnectycubeFlutterCallKitPlugin][pushRegistry] deviceToken: \(deviceToken)")
+        print("[VoIPController][pushRegistry] token: \(pushCredentials.token)")
+
+        let deviceToken: String = pushCredentials.token.reduce("", {$0 + String(format: "%02X", $1) })
+        print("[VoIPController][pushRegistry] deviceToken: \(deviceToken)")
         
         self.voipToken = deviceToken
         

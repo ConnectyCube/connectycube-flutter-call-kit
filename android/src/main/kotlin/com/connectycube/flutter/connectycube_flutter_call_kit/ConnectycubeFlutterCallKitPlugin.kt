@@ -49,6 +49,10 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
+            "getVoipToken" -> {
+                result.success(null)
+            }
+
             "showCallNotification" -> {
                 try {
                     @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
