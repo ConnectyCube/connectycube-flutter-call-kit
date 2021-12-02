@@ -37,19 +37,6 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     static let callController = CallKitController()
     static let voipController = VoIPController(withCallKitController: callController)
 
-
-    //methods
-//    static let _methodChannelGetVoipToken = "connectycube_flutter_call_kit.getVoipToken"
-    static let _methodChannelStartCall = "connectycube_flutter_call_kit.startCall"
-    static let _methodChannelReportIncomingCall = "connectycube_flutter_call_kit.reportIncomingCall"
-    static let _methodChannelReportOutgoingCall = "connectycube_flutter_call_kit.reportOutgoingCall"
-    static let _methodChannelReportCallEnded =
-    "connectycube_flutter_call_kit.reportCallEnded";
-    static let _methodChannelEndCall = "connectycube_flutter_call_kit.endCall";
-    static let _methodChannelHoldCall = "connectycube_flutter_call_kit.holdCall";
-    static let _methodChannelCheckPermissions = "connectycube_flutter_call_kit.checkPermissions";
-    static let _methodChannelMuteCall = "connectycube_flutter_call_kit.muteCall";
-
     public static func register(with registrar: FlutterPluginRegistrar) {
 
         //setup method channels
@@ -107,52 +94,51 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                 print("[SwiftConnectycubeFlutterCallKitPlugin][handle] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
                 result(error == nil)
             }
-        }else if(call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelStartCall){
-            if let handle = arguments["handle"] as? String{
-                let uuidString = arguments["uuid"] as? String;
-                SwiftConnectycubeFlutterCallKitPlugin.callController.startCall(handle: handle, videoEnabled: false, uuid: uuidString)
-                result(true)
-            }else{
-                result(FlutterError.init(code: "bad args", message: nil, details: nil))
-            }
-        }else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelReportOutgoingCall{
-            if let finishedConnecting = arguments["finishedConnecting"] as? Bool, let uuid = arguments["uuid"] as? String{
-                SwiftConnectycubeFlutterCallKitPlugin.callController.reportOutgoingCall(uuid: UUID(uuidString: uuid)!, finishedConnecting: finishedConnecting);
-                result(true);
-            }else{
-                result(FlutterError.init(code: "bad args", message: nil, details: nil))
-            }
+        }else if(call.method == "reportCallAccepted"){
+            let callId = arguments["session_id"] as! String
+            let callType = arguments["call_type"] as! Int
+            let videoEnabled = callType == 1
+
+            SwiftConnectycubeFlutterCallKitPlugin.callController.startCall(handle: callId, videoEnabled: videoEnabled, uuid: callId)
+            result(true)
+        }else if (call.method == "reportCallFinished"){
+            let callId = arguments["session_id"] as! String
+            let reason = arguments["reason"] as! String
+
+
+            SwiftConnectycubeFlutterCallKitPlugin.callController.reportCallEnded(uuid: UUID(uuidString: callId)!, reason: CallEndedReason.init(rawValue: reason)!);
+            result(true);
         }
-        else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelReportCallEnded{
-            if let reason = arguments["reason"] as? String, let uuid = arguments["uuid"] as? String{
-                SwiftConnectycubeFlutterCallKitPlugin.callController.reportCallEnded(uuid: UUID(uuidString: uuid)!, reason: CallEndedReason.init(rawValue: reason)!);
-                result(true);
-            }else{
-                result(FlutterError.init(code: "bad args", message: nil, details: nil))
-            }
-        }else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelEndCall{
-            if let uuid = arguments["uuid"] as? String{
-                SwiftConnectycubeFlutterCallKitPlugin.callController.end(uuid: UUID(uuidString: uuid)!)
-                result(true)
-            }else{
-                result(FlutterError.init(code: "bad args", message: nil, details: nil))
-            }
-        }else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelHoldCall{
-            if let uuid = arguments["uuid"] as? String, let hold = arguments["hold"] as? Bool{
-                SwiftConnectycubeFlutterCallKitPlugin.callController.setHeld(uuid: UUID(uuidString: uuid)!, onHold: hold)
-                result(true)
-            }else{
-                result(FlutterError.init(code: "bad args", message: nil, details: nil))
-            }
-        }else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelCheckPermissions{
-            result(true) //no permissions needed on ios
-        }else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelMuteCall{
-            if let uuid = arguments["uuid"] as? String, let muted = arguments["muted"] as? Bool{
-                SwiftConnectycubeFlutterCallKitPlugin.callController.setMute(uuid: UUID(uuidString: uuid)!, muted: muted)
-                result(true)
-            }else{
-                result(FlutterError.init(code: "bad args", message: nil, details: nil))
-            }
+        //        else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelReportOutgoingCall{
+        //            if let finishedConnecting = arguments["finishedConnecting"] as? Bool, let uuid = arguments["uuid"] as? String{
+        //                SwiftConnectycubeFlutterCallKitPlugin.callController.reportOutgoingCall(uuid: UUID(uuidString: uuid)!, finishedConnecting: finishedConnecting);
+        //                result(true);
+        //            }else{
+        //                result(FlutterError.init(code: "bad args", message: nil, details: nil))
+        //            }
+        //        }
+        else if (call.method == "reportCallEnded"){
+            let callId = arguments["session_id"] as! String
+            SwiftConnectycubeFlutterCallKitPlugin.callController.end(uuid: UUID(uuidString: callId)!)
+            result(true)
+        }
+        //        else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelHoldCall{
+        //            if let uuid = arguments["uuid"] as? String, let hold = arguments["hold"] as? Bool{
+        //                SwiftConnectycubeFlutterCallKitPlugin.callController.setHeld(uuid: UUID(uuidString: uuid)!, onHold: hold)
+        //                result(true)
+        //            }else{
+        //                result(FlutterError.init(code: "bad args", message: nil, details: nil))
+        //            }
+        //        }
+        //        else if call.method == SwiftConnectycubeFlutterCallKitPlugin._methodChannelCheckPermissions{
+        //            result(true) //no permissions needed on ios
+        //        }
+        else if (call.method == "muteCall"){
+            let callId = arguments["session_id"] as! String
+            let muted = arguments["muted"] as! Bool
+
+            SwiftConnectycubeFlutterCallKitPlugin.callController.setMute(uuid: UUID(uuidString: callId)!, muted: muted)
+            result(true)
         }
     }
 }

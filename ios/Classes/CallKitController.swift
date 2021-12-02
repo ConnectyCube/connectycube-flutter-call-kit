@@ -18,6 +18,7 @@ enum CallEvent : String {
     case reset = "reset"
     case startCall = "startCall"
     case setMuted = "setMuted"
+    case setUnMuted = "setUnMuted"
 }
 
 enum CallEndedReason : String {
@@ -41,11 +42,12 @@ class CallKitController : NSObject {
 
     //TODO: construct configuration from flutter. pass into init over method channel
     static var providerConfiguration: CXProviderConfiguration = {
+        let appName = Bundle.main.infoDictionary?[kCFBundleNameKey as String] as! String
         var providerConfiguration: CXProviderConfiguration
         if #available(iOS 14.0, *) {
             providerConfiguration = CXProviderConfiguration.init()
         } else {
-            providerConfiguration = CXProviderConfiguration(localizedName: "Flutter Voip Kit") //TODO:
+            providerConfiguration = CXProviderConfiguration(localizedName: appName)
         }
 
         providerConfiguration.supportsVideo = true
@@ -161,7 +163,7 @@ extension CallKitController {
 
     func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
         print("CallController: user requested start call \(handle)")
-        let handle = CXHandle(type: .phoneNumber, value: handle)
+        let handle = CXHandle(type: .generic, value: handle)
         let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!);
         let startCallAction = CXStartCallAction(call: callUUID!, handle: handle)
         startCallAction.isVideo = videoEnabled
@@ -181,7 +183,7 @@ extension CallKitController: CXProviderDelegate {
     //action.callUUID
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("CallController: Answer Call")
-        actionListener?(.answerCall,action.callUUID,nil)
+        actionListener?(.answerCall,action.callUUID,currentCallData)
         action.fulfill()
     }
 
@@ -194,7 +196,7 @@ extension CallKitController: CXProviderDelegate {
 
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("CallController: End Call")
-        actionListener?(.endCall, action.callUUID,nil)
+        actionListener?(.endCall, action.callUUID,currentCallData)
         action.fulfill()
     }
 
@@ -205,13 +207,18 @@ extension CallKitController: CXProviderDelegate {
     }
 
     func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
-        print("CallController: Set Held")
-        actionListener?(.setMuted, action.callUUID,action.isMuted)
+        print("CallController: Mute call")
+        if (action.isMuted){
+            actionListener?(.setMuted, action.callUUID,currentCallData)
+        } else {
+            actionListener?(.setUnMuted, action.callUUID,currentCallData)
+        }
+
         action.fulfill()
     }
-    
+
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-        actionListener?(.startCall, action.callUUID, action.handle.value)
+        actionListener?(.startCall, action.callUUID, currentCallData)
         print("CallController: Start Call")
     }
 }

@@ -35,7 +35,9 @@ class ConnectycubeFlutterCallKit {
 
   ConnectycubeFlutterCallKit._internal();
 
+  /// iOS only callbacks
   static Function(String voipToken)? onVoipTokenReceived;
+  static Function(bool isMuted)? onCallMuted;
 
   static Function(
     String sessionId,
@@ -96,8 +98,6 @@ class ConnectycubeFlutterCallKit {
     required Set<int>? opponentsIds,
     Map<String, String>? userInfo,
   }) async {
-    if (!Platform.isAndroid) return;
-
     return _methodChannel.invokeMethod("showCallNotification", {
       'session_id': sessionId,
       'call_type': callType,
@@ -110,19 +110,17 @@ class ConnectycubeFlutterCallKit {
 
   static Future<void> reportCallAccepted({
     required String? sessionId,
+    required int? callType,
   }) async {
-    if (!Platform.isAndroid) return;
-
     return _methodChannel.invokeMethod("reportCallAccepted", {
       'session_id': sessionId,
+      'call_type': callType
     });
   }
 
   static Future<void> reportCallEnded({
     required String? sessionId,
   }) async {
-    if (!Platform.isAndroid) return;
-
     return _methodChannel.invokeMethod("reportCallEnded", {
       'session_id': sessionId,
     });
@@ -275,26 +273,43 @@ class ConnectycubeFlutterCallKit {
   static void _processEvent(Map<String, dynamic> eventData) {
     log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
 
-    final event = eventData["event"] as String?;
+    var event = eventData["event"] as String;
+    var arguments = eventData['args'] as Map<String, dynamic>;
+    var userInfo = arguments['user_info'];
+    var userInfoParsed;
+    if (userInfo != null) {
+      userInfoParsed = Map<String, String>.from(jsonDecode(userInfo));
+    }
 
     switch (event) {
       case 'voipToken':
         onVoipTokenReceived?.call(eventData['voipToken']);
         break;
 
-      case '':
+      case 'answerCall':
+        _onCallAccepted?.call(
+          arguments["session_id"],
+          arguments["call_type"],
+          arguments["caller_id"],
+          arguments["caller_name"],
+          (arguments["call_opponents"] as String)
+              .split(',')
+              .map((stringUserId) => int.parse(stringUserId))
+              .toSet(),
+          userInfoParsed,
+        );
         break;
 
-      case '':
+      case 'endCall':
         break;
 
-      case '':
+      case 'startCall':
         break;
 
-      case '':
+      case 'setMuted':
         break;
 
-      case '':
+      case 'setUnMuted':
         break;
 
       case '':
