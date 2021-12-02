@@ -18,7 +18,7 @@ class ConnectycubeFlutterCallKit {
   static const MethodChannel _methodChannel =
       const MethodChannel('connectycube_flutter_call_kit');
   static const EventChannel _eventChannel =
-      const EventChannel('connectycube_flutter_call_kit.event_channel');
+      const EventChannel('connectycube_flutter_call_kit.callEventChannel');
 
   static ConnectycubeFlutterCallKit get instance => _getInstance();
   static ConnectycubeFlutterCallKit? _instance;
@@ -37,7 +37,7 @@ class ConnectycubeFlutterCallKit {
 
   /// iOS only callbacks
   static Function(String voipToken)? onVoipTokenReceived;
-  static Function(bool isMuted)? onCallMuted;
+  static Function(bool isMuted, String sessionId)? onCallMuted;
 
   static Function(
     String sessionId,
@@ -85,7 +85,7 @@ class ConnectycubeFlutterCallKit {
   /// Returns VoIP token for iOS plaform.
   /// Returns null for the Amndroid platform
   static Future<String?> getVoipToken() {
-    return _methodChannel.invokeMethod('getVoipToken').then((result) {
+    return _methodChannel.invokeMethod('getVoipToken', {}).then((result) {
       return result?.toString();
     });
   }
@@ -274,7 +274,7 @@ class ConnectycubeFlutterCallKit {
     log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
 
     var event = eventData["event"] as String;
-    var arguments = eventData['args'] as Map<String, dynamic>;
+    var arguments = Map<String, dynamic>.from(eventData['args']);
     var userInfo = arguments['user_info'];
     var userInfoParsed;
     if (userInfo != null) {
@@ -307,9 +307,11 @@ class ConnectycubeFlutterCallKit {
         break;
 
       case 'setMuted':
+        onCallMuted?.call(true, arguments["session_id"]);
         break;
 
       case 'setUnMuted':
+        onCallMuted?.call(false, arguments["session_id"]);
         break;
 
       case '':
