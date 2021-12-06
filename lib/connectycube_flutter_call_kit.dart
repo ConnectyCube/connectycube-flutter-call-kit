@@ -83,7 +83,7 @@ class ConnectycubeFlutterCallKit {
   }
 
   /// Returns VoIP token for iOS plaform.
-  /// Returns null for the Amndroid platform
+  /// Returns null for the Android platform
   static Future<String?> getVoipToken() {
     return _methodChannel.invokeMethod('getVoipToken', {}).then((result) {
       return result?.toString();
@@ -129,8 +129,6 @@ class ConnectycubeFlutterCallKit {
   static Future<String> getCallState({
     required String? sessionId,
   }) async {
-    if (!Platform.isAndroid) return Future.value(CallState.UNKNOWN);
-
     return _methodChannel.invokeMethod("getCallState", {
       'session_id': sessionId,
     }).then((state) {
@@ -151,8 +149,6 @@ class ConnectycubeFlutterCallKit {
   static Future<Map<String, dynamic>?> getCallData({
     required String? sessionId,
   }) async {
-    if (!Platform.isAndroid) return Future.value();
-
     return _methodChannel.invokeMethod("getCallData", {
       'session_id': sessionId,
     }).then((data) {
@@ -166,16 +162,12 @@ class ConnectycubeFlutterCallKit {
   static Future<void> clearCallData({
     required String? sessionId,
   }) async {
-    if (!Platform.isAndroid) return Future.value();
-
     return _methodChannel.invokeMethod("clearCallData", {
       'session_id': sessionId,
     });
   }
 
   static Future<String?> getLastCallId() async {
-    if (!Platform.isAndroid) return Future.value();
-
     return _methodChannel.invokeMethod("getLastCallId");
   }
 
@@ -301,6 +293,17 @@ class ConnectycubeFlutterCallKit {
         break;
 
       case 'endCall':
+        _onCallRejected?.call(
+          arguments["session_id"],
+          arguments["call_type"],
+          arguments["caller_id"],
+          arguments["caller_name"],
+          (arguments["call_opponents"] as String)
+              .split(',')
+              .map((stringUserId) => int.parse(stringUserId))
+              .toSet(),
+          userInfoParsed,
+        );
         break;
 
       case 'startCall':

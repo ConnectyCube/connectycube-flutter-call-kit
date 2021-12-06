@@ -27,11 +27,20 @@ enum CallEndedReason : String {
     case remoteEnded = "remoteEnded"
 }
 
+enum CallState : String {
+    case pending = "pending"
+    case accepted = "accepted"
+    case rejected = "rejected"
+    case unknown = "unknown"
+}
+
 class CallKitController : NSObject {
     private let provider : CXProvider
     private let callController : CXCallController
     var actionListener : ((CallEvent, UUID, Any?)->Void)?
-    private var currentCallData: [String: Any] = [:]
+    var currentCallData: [String: Any] = [:]
+    private var callStates: [String:CallState] = [:]
+    private var callsData: [String:[String:Any]] = [:]
     
     override init() {
         self.provider = CXProvider(configuration: CallKitController.providerConfiguration)
@@ -101,6 +110,8 @@ class CallKitController : NSObject {
                         self.currentCallData["user_info"] = nil
                     }
                 }
+                self.callStates[uuid] = .pending
+                self.callsData[uuid] = self.currentCallData
             }
         }
     }
@@ -125,7 +136,25 @@ class CallKitController : NSObject {
         default:
             cxReason = CXCallEndedReason.failed
         }
+        self.callStates[uuid.uuidString] = .pending
         self.provider.reportCall(with: uuid, endedAt: Date.init(), reason: cxReason!)
+    }
+    
+    func getCallState(uuid: String) -> CallState {
+        return self.callStates[uuid] ?? .unknown
+    }
+    
+    func setCallState(uuid: String, callState: String){
+        self.callStates[uuid] = CallState(rawValue: callState)
+    }
+    
+    func getCallData(uuid: String) -> [String: Any]{
+        return self.callsData[uuid] ?? [:]
+    }
+    
+    func clearCallData(uuid: String){
+        self.callStates.removeAll()
+        self.callsData.removeAll()
     }
 }
 
@@ -137,6 +166,7 @@ extension CallKitController {
         let endCallAction = CXEndCallAction(call: uuid)
         let transaction = CXTransaction(action: endCallAction)
         
+        self.callStates[uuid.uuidString] = .rejected
         requestTransaction(transaction)
     }
     
@@ -176,6 +206,8 @@ extension CallKitController {
         
         let transaction = CXTransaction(action: startCallAction)
         
+        self.callStates[uuid!] = .accepted
+        
         requestTransaction(transaction)
     }
 }
@@ -190,6 +222,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("CallController: Answer Call")
         actionListener?(.answerCall,action.callUUID,currentCallData)
+        self.callStates[action.callUUID.uuidString] = .accepted
         action.fulfill()
     }
     
@@ -203,6 +236,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("CallController: End Call")
         actionListener?(.endCall, action.callUUID,currentCallData)
+        self.callStates[action.callUUID.uuidString] = .rejected
         action.fulfill()
     }
     
@@ -226,6 +260,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         actionListener?(.startCall, action.callUUID, currentCallData)
         print("CallController: Start Call")
+        self.callStates[action.callUUID.uuidString] = .accepted
         action.fulfill()
     }
 }
