@@ -277,6 +277,12 @@ class ConnectycubeFlutterCallKit {
     return _methodChannel.invokeMethod("getLastCallId");
   }
 
+  static Future<void> cancelAllNotifications() async {
+    if (!Platform.isAndroid) return;
+
+    return _methodChannel.invokeMethod("cancelAllNotifications");
+  }
+
   static Future<void> setOnLockScreenVisibility({
     required bool? isVisible,
   }) async {
