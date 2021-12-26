@@ -232,7 +232,6 @@ fun createCallNotification(
         .setContentIntent(pendingIntent)
         .setSound(ringtone)
         .setPriority(NotificationCompat.PRIORITY_MAX)
-        .setTimeoutAfter(60000)
     return notificationBuilder
 }
 
