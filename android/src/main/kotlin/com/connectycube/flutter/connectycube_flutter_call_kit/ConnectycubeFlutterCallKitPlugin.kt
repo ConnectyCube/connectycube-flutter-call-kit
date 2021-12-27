@@ -1,5 +1,6 @@
 package com.connectycube.flutter.connectycube_flutter_call_kit
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,11 +9,14 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.WindowManager
 import androidx.annotation.Keep
 import androidx.annotation.NonNull
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.*
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -47,10 +51,35 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
         this.channel.setMethodCallHandler(this)
     }
 
+    @SuppressLint("LongLogTag")
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "getVoipToken" -> {
-                result.success(null)
+                FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        Log.w(
+                            "ConnectycubeFlutterCallKitPlugin",
+                            "Fetching FCM registration token failed",
+                            task.exception
+                        )
+                        return@OnCompleteListener
+                    }
+
+                    val token = task.result
+                    val tokenStringId = applicationContext?.resources?.getIdentifier(
+                        "msg_token_fmt",
+                        "string",
+                        applicationContext?.packageName
+                    )
+                    if (tokenStringId != null && tokenStringId != 0) {
+                        val msg = applicationContext?.getString(tokenStringId, token)
+                        Log.d("ConnectycubeFlutterCallKitPlugin", "Received FCM token $msg")
+                        result.success(msg)
+                    } else {
+                        Log.d("ConnectycubeFlutterCallKitPlugin", "Error while receiving FCM token")
+                        result.success(null)
+                    }
+                })
             }
 
             "showCallNotification" -> {
@@ -59,7 +88,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         call.arguments as Map<String, Any>
                     val callId = arguments["session_id"] as String
 
-                    if (CALL_STATE_UNKNOWN != getCallState(callId)) {
+                    if (CALL_STATE_UNKNOWN != getCallState(applicationContext, callId)) {
                         result.success(null)
                         return
                     }
@@ -82,9 +111,9 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         userInfo
                     )
 
-                    saveCallState(callId, CALL_STATE_PENDING)
-                    saveCallData(callId, arguments)
-                    saveCallId(callId)
+                    saveCallState(applicationContext, callId, CALL_STATE_PENDING)
+                    saveCallData(applicationContext, callId, arguments)
+                    saveCallId(applicationContext, callId)
 
                     result.success(null)
                 } catch (e: Exception) {
@@ -99,7 +128,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     val callId = arguments["session_id"] as String
                     cancelCallNotification(applicationContext!!, callId)
 
-                    saveCallState(callId, CALL_STATE_ACCEPTED)
+                    saveCallState(applicationContext, callId, CALL_STATE_ACCEPTED)
 
                     result.success(null)
                 } catch (e: Exception) {
@@ -113,7 +142,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         call.arguments as Map<String, Any>
                     val callId = arguments["session_id"] as String
 
-                    processCallEnded(callId)
+                    processCallEnded(applicationContext, callId)
 
 
                     result.success(null)
@@ -128,7 +157,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         call.arguments as Map<String, Any>
                     val callId = arguments["session_id"] as String
 
-                    result.success(getCallState(callId))
+                    result.success(getCallState(applicationContext, callId))
                 } catch (e: Exception) {
                     result.error("ERROR", e.message, "")
                 }
@@ -141,7 +170,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     val callId = arguments["session_id"] as String
                     val callState = arguments["call_state"] as String
 
-                    saveCallState(callId, callState)
+                    saveCallState(applicationContext, callId, callState)
 
                     result.success(null)
                 } catch (e: Exception) {
@@ -155,7 +184,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         call.arguments as Map<String, Any>
                     val callId = arguments["session_id"] as String
 
-                    result.success(getCallData(callId))
+                    result.success(getCallData(applicationContext, callId))
                 } catch (e: Exception) {
                     result.error("ERROR", e.message, "")
                 }
@@ -180,7 +209,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         call.arguments as Map<String, Any>
                     val callId = arguments["session_id"] as String
 
-                    clearCallData(callId)
+                    clearCallData(applicationContext, callId)
                     result.success(null)
                 } catch (e: Exception) {
                     result.error("ERROR", e.message, "")
@@ -189,7 +218,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
 
             "getLastCallId" -> {
                 try {
-                    result.success(getLastCallId())
+                    result.success(getLastCallId(applicationContext))
                 } catch (e: Exception) {
                     result.error("ERROR", e.message, "")
                 }
@@ -260,12 +289,12 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
 
         when (action) {
             ACTION_CALL_REJECT -> {
-                saveCallState(callIdToProcess!!, CALL_STATE_REJECTED)
+                saveCallState(context?.applicationContext, callIdToProcess!!, CALL_STATE_REJECTED)
 
                 channel.invokeMethod("onCallRejected", parameters)
             }
             ACTION_CALL_ACCEPT -> {
-                saveCallState(callIdToProcess!!, CALL_STATE_ACCEPTED)
+                saveCallState(context?.applicationContext, callIdToProcess!!, CALL_STATE_ACCEPTED)
 
                 channel.invokeMethod("onCallAccepted", parameters)
 
@@ -298,80 +327,81 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
     override fun onDetachedFromActivity() {
         mainActivity = null
     }
+}
 
-    private fun saveCallState(callId: String, callState: String) {
-        if (applicationContext == null) return
+fun saveCallState(applicationContext: Context?, callId: String, callState: String) {
+    if (applicationContext == null) return
 
-        putString(applicationContext!!, callId + "_state", callState)
+    putString(applicationContext, callId + "_state", callState)
+}
+
+fun getCallState(applicationContext: Context?, callId: String): String {
+    if (applicationContext == null) return CALL_STATE_UNKNOWN
+
+    val callState: String? = getString(applicationContext, callId + "_state")
+
+    if (TextUtils.isEmpty(callState)) return CALL_STATE_UNKNOWN
+
+    return callState!!
+}
+
+fun getCallData(applicationContext: Context?, callId: String): Map<String, *>? {
+    if (applicationContext == null) return null
+
+    val callDataString: String? = getString(applicationContext, callId + "_data")
+
+    if (TextUtils.isEmpty(callDataString)) return null
+
+    return getMapFromJsonString(callDataString!!)
+}
+
+fun saveCallData(applicationContext: Context?, callId: String, callData: Map<String, *>) {
+    if (applicationContext == null) return
+
+    try {
+        putString(applicationContext, callId + "_data", mapToJsonString(callData))
+    } catch (e: Exception) {
+        // ignore
     }
+}
 
-    private fun getCallState(callId: String): String {
-        if (applicationContext == null) return CALL_STATE_UNKNOWN
+fun clearCallData(applicationContext: Context?, callId: String) {
+    if (applicationContext == null) return
 
-        val callState: String? = getString(applicationContext!!, callId + "_state")
-
-        if (TextUtils.isEmpty(callState)) return CALL_STATE_UNKNOWN
-
-        return callState!!
+    try {
+        remove(applicationContext, callId + "_state")
+        remove(applicationContext, callId + "_data")
+    } catch (e: Exception) {
+        // ignore
     }
+}
 
-    private fun getCallData(callId: String): Map<String, *>? {
-        if (applicationContext == null) return null
+fun saveCallId(applicationContext: Context?, callId: String) {
+    if (applicationContext == null) return
 
-        val callDataString: String? = getString(applicationContext!!, callId + "_data")
-
-        if (TextUtils.isEmpty(callDataString)) return null
-
-        return getMapFromJsonString(callDataString!!)
+    try {
+        putString(applicationContext, "last_call_id", callId)
+    } catch (e: Exception) {
+        // ignore
     }
+}
 
-    private fun saveCallData(callId: String, callData: Map<String, *>) {
-        if (applicationContext == null) return
+fun processCallEnded(applicationContext: Context?, sessionId: String) {
+    if (applicationContext == null) return
 
-        try {
-            putString(applicationContext!!, callId + "_data", mapToJsonString(callData))
-        } catch (e: Exception) {
-            // ignore
-        }
-    }
+    saveCallState(applicationContext, sessionId, CALL_STATE_REJECTED)
+    cancelCallNotification(applicationContext, sessionId)
 
-    private fun clearCallData(callId: String) {
-        if (applicationContext == null) return
+    val broadcastIntent = Intent(ACTION_CALL_ENDED)
+    val bundle = Bundle()
+    bundle.putString(EXTRA_CALL_ID, sessionId)
+    broadcastIntent.putExtras(bundle)
+    LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(broadcastIntent)
+}
 
-        try {
-            remove(applicationContext!!, callId + "_state")
-            remove(applicationContext!!, callId + "_data")
-        } catch (e: Exception) {
-            // ignore
-        }
-    }
 
-    private fun saveCallId(callId: String) {
-        if (applicationContext == null) return
+fun getLastCallId(applicationContext: Context?): String? {
+    if (applicationContext == null) return null
 
-        try {
-            putString(applicationContext!!, "last_call_id", callId)
-        } catch (e: Exception) {
-            // ignore
-        }
-    }
-
-    private fun getLastCallId(): String? {
-        if (applicationContext == null) return null
-
-        return getString(applicationContext!!, "last_call_id")
-    }
-
-    private fun processCallEnded(sessionId: String) {
-        if (applicationContext == null) return
-
-        saveCallState(sessionId, CALL_STATE_REJECTED)
-        cancelCallNotification(applicationContext!!, sessionId)
-
-        val broadcastIntent = Intent(ACTION_CALL_ENDED)
-        val bundle = Bundle()
-        bundle.putString(EXTRA_CALL_ID, sessionId)
-        broadcastIntent.putExtras(bundle)
-        localBroadcastManager.sendBroadcast(broadcastIntent)
-    }
+    return getString(applicationContext, "last_call_id")
 }
