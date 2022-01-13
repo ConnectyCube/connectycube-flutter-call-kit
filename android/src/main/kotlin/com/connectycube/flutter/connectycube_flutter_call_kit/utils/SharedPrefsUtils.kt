@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 
 private const val PREFERENCES_FILE_NAME = "connectycube_flutter_call_kit"
 private const val DEFAULT_INT_VALUE = -1
-private const val DEFAULT_LONG_VALUE: Long = -1
+private const val DEFAULT_LONG_VALUE: Long = -1L
 
 private var preferences: SharedPreferences? = null
 private var editor: SharedPreferences.Editor? = null

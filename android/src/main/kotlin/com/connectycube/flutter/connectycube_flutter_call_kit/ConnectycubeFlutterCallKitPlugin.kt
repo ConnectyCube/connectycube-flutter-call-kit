@@ -14,41 +14,49 @@ import android.view.WindowManager
 import androidx.annotation.Keep
 import androidx.annotation.NonNull
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.connectycube.flutter.connectycube_flutter_call_kit.background_isolates.ConnectycubeFlutterBgPerformingService
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.*
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import io.flutter.embedding.engine.FlutterShellArgs
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry
 
 
 /** ConnectycubeFlutterCallKitPlugin */
 @Keep
 class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
-    PluginRegistry.NewIntentListener, ActivityAware, BroadcastReceiver() {
+    PluginRegistry.NewIntentListener, ActivityAware {
     private var applicationContext: Context? = null
     private var mainActivity: Activity? = null
-    private lateinit var channel: MethodChannel
-    private lateinit var localBroadcastManager: LocalBroadcastManager
+    private lateinit var methodChannel: MethodChannel
+    private lateinit var eventChannel: EventChannel
+
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        onAttachedToEngine(
-            flutterPluginBinding.applicationContext,
-            flutterPluginBinding.binaryMessenger
-        )
-        registerCallStateReceiver()
+        this.applicationContext = flutterPluginBinding.applicationContext
+        ContextHolder.applicationContext = this.applicationContext
+        this.methodChannel =
+            MethodChannel(flutterPluginBinding.binaryMessenger, "connectycube_flutter_call_kit")
+        this.methodChannel.setMethodCallHandler(this)
+
+        this.eventChannel =
+            EventChannel(
+                flutterPluginBinding.binaryMessenger,
+                "connectycube_flutter_call_kit.callEventChannel"
+            )
+        this.eventChannel.setStreamHandler(CallStreamHandler(flutterPluginBinding.applicationContext))
     }
 
-    private fun onAttachedToEngine(context: Context, binaryMessenger: BinaryMessenger) {
-        this.applicationContext = context
-        this.channel = MethodChannel(binaryMessenger, "connectycube_flutter_call_kit")
-        this.channel.setMethodCallHandler(this)
+    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        applicationContext = null
+        ContextHolder.applicationContext = null
+        methodChannel.setMethodCallHandler(null)
+        eventChannel.setStreamHandler(null)
     }
 
     @SuppressLint("LongLogTag")
@@ -80,6 +88,54 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         result.success(null)
                     }
                 })
+            }
+
+            "startBackgroundIsolate" -> {
+                @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
+                    call.arguments as Map<String, Any>
+
+                var pluginCallbackHandle: Long = -1L
+                var userCallbackHandle: Long = -1L
+                var userCallbackHandleName: String =
+                    arguments["userCallbackHandleName"]?.toString() ?: ""
+
+
+                val arg1 = arguments["pluginCallbackHandle"] ?: -1L
+                val arg2 = arguments["userCallbackHandle"] ?: -1L
+
+
+                pluginCallbackHandle = if (arg1 is Long) {
+                    arg1
+                } else {
+                    (arg1 as Int).toLong()
+                }
+
+                userCallbackHandle = if (arg2 is Long) {
+                    arg2
+                } else {
+                    (arg2 as Int).toLong()
+                }
+
+                var shellArgs: FlutterShellArgs? = null
+                if (mainActivity != null) {
+                    // Supports both Flutter Activity types:
+                    //    io.flutter.embedding.android.FlutterFragmentActivity
+                    //    io.flutter.embedding.android.FlutterActivity
+                    // We could use `getFlutterShellArgs()` but this is only available on `FlutterActivity`.
+                    shellArgs = FlutterShellArgs.fromIntent(mainActivity!!.intent)
+                }
+
+                saveBackgroundHandler(applicationContext, pluginCallbackHandle)
+
+                if(REJECTED_IN_BACKGROUND == userCallbackHandleName){
+                    saveBackgroundRejectHandler(applicationContext, userCallbackHandle)
+                } else if (ACCEPTED_IN_BACKGROUND == userCallbackHandleName){
+                    saveBackgroundAcceptHandler(applicationContext, userCallbackHandle)
+                }
+
+                ConnectycubeFlutterBgPerformingService.startBackgroundIsolate(
+                    pluginCallbackHandle, shellArgs
+                )
             }
 
             "showCallNotification" -> {
@@ -230,17 +286,6 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
         }
     }
 
-    private fun registerCallStateReceiver() {
-        localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext!!)
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(ACTION_CALL_REJECT)
-        intentFilter.addAction(ACTION_CALL_ACCEPT)
-        localBroadcastManager.registerReceiver(this, intentFilter)
-    }
-
-    private fun unRegisterCallStateReceiver() {
-        localBroadcastManager.unregisterReceiver(this)
-    }
 
     private fun setOnLockScreenVisibility(isVisible: Boolean) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -254,11 +299,6 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
         }
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        applicationContext = null
-        channel.setMethodCallHandler(null)
-        unRegisterCallStateReceiver()
-    }
 
     override fun onNewIntent(intent: Intent?): Boolean {
         if (intent != null && intent.action != null && intent.action == ACTION_CALL_ACCEPT) {
@@ -268,42 +308,6 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
         return false
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent == null || TextUtils.isEmpty(intent.action)) return
-
-        val action: String? = intent.action
-        if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action) {
-            return
-        }
-        val callIdToProcess: String? = intent.getStringExtra(EXTRA_CALL_ID)
-        if (TextUtils.isEmpty(callIdToProcess)) return
-
-        val parameters = HashMap<String, Any?>()
-        parameters["session_id"] = callIdToProcess
-        parameters["call_type"] = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
-        parameters["caller_id"] = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
-        parameters["caller_name"] = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
-        parameters["call_opponents"] =
-            intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")
-        parameters["user_info"] = intent.getStringExtra(EXTRA_CALL_USER_INFO)
-
-        when (action) {
-            ACTION_CALL_REJECT -> {
-                saveCallState(context?.applicationContext, callIdToProcess!!, CALL_STATE_REJECTED)
-
-                channel.invokeMethod("onCallRejected", parameters)
-            }
-            ACTION_CALL_ACCEPT -> {
-                saveCallState(context?.applicationContext, callIdToProcess!!, CALL_STATE_ACCEPTED)
-
-                channel.invokeMethod("onCallAccepted", parameters)
-
-                val launchIntent = getLaunchIntent(context!!)
-                launchIntent?.action = ACTION_CALL_ACCEPT
-                context.startActivity(launchIntent)
-            }
-        }
-    }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         binding.addOnNewIntentListener(this)
@@ -386,6 +390,54 @@ fun saveCallId(applicationContext: Context?, callId: String) {
     }
 }
 
+fun saveBackgroundHandler(applicationContext: Context?, callbackId: Long) {
+    if (applicationContext == null) return
+
+    try {
+        putLong(applicationContext, "background_callback", callbackId)
+    } catch (e: Exception) {
+        // ignore
+    }
+}
+
+fun getBackgroundHandler(applicationContext: Context?): Long {
+    if (applicationContext == null) return -1L
+
+    return getLong(applicationContext, "background_callback")
+}
+
+
+fun saveBackgroundAcceptHandler(applicationContext: Context?, callbackId: Long) {
+    if (applicationContext == null) return
+
+    try {
+        putLong(applicationContext, "background_callback_accept", callbackId)
+    } catch (e: Exception) {
+        // ignore
+    }
+}
+fun getBackgroundAcceptHandler(applicationContext: Context?): Long {
+    if (applicationContext == null) return -1L
+
+    return getLong(applicationContext, "background_callback_accept")
+}
+
+fun saveBackgroundRejectHandler(applicationContext: Context?, callbackId: Long) {
+    if (applicationContext == null) return
+
+    try {
+        putLong(applicationContext, "background_callback_reject", callbackId)
+    } catch (e: Exception) {
+        // ignore
+    }
+}
+
+fun getBackgroundRejectHandler(applicationContext: Context?): Long {
+    if (applicationContext == null) return -1L
+
+    return getLong(applicationContext, "background_callback_reject")
+}
+
 fun processCallEnded(applicationContext: Context?, sessionId: String) {
     if (applicationContext == null) return
 
@@ -404,4 +456,89 @@ fun getLastCallId(applicationContext: Context?): String? {
     if (applicationContext == null) return null
 
     return getString(applicationContext, "last_call_id")
+}
+
+class CallStreamHandler(private var context: Context) : EventChannel.StreamHandler,
+    BroadcastReceiver() {
+    private lateinit var localBroadcastManager: LocalBroadcastManager
+
+    private var events: EventChannel.EventSink? = null
+
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        this.events = events
+
+        registerCallStateReceiver(context)
+    }
+
+    override fun onCancel(arguments: Any?) {
+        unRegisterCallStateReceiver()
+    }
+
+    private fun registerCallStateReceiver(context: Context) {
+        localBroadcastManager = LocalBroadcastManager.getInstance(context)
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(ACTION_CALL_REJECT)
+        intentFilter.addAction(ACTION_CALL_ACCEPT)
+        localBroadcastManager.registerReceiver(this, intentFilter)
+    }
+
+    private fun unRegisterCallStateReceiver() {
+        localBroadcastManager.unregisterReceiver(this)
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (intent == null || TextUtils.isEmpty(intent.action)) return
+
+        val action: String? = intent.action
+
+        if (ACTION_TOKEN_REFRESHED == action) {
+            val token = intent.getStringExtra(EXTRA_PUSH_TOKEN)
+
+            val parameters = HashMap<String, Any?>()
+            parameters["event"] = "voipToken"
+            parameters["voipToken"] = token
+
+            events?.success(parameters)
+            return
+        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action) {
+            return
+        }
+
+        val callIdToProcess: String? = intent.getStringExtra(EXTRA_CALL_ID)
+        if (TextUtils.isEmpty(callIdToProcess)) return
+
+        val callEventMap = HashMap<String, Any?>()
+        callEventMap["session_id"] = callIdToProcess
+        callEventMap["call_type"] = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
+        callEventMap["caller_id"] = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
+        callEventMap["caller_name"] = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
+        callEventMap["call_opponents"] =
+            intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")
+        callEventMap["user_info"] = intent.getStringExtra(EXTRA_CALL_USER_INFO)
+
+        val callbackData = HashMap<String, Any?>()
+        callbackData["args"] = callEventMap
+
+
+        when (action) {
+            ACTION_CALL_REJECT -> {
+                saveCallState(context?.applicationContext, callIdToProcess!!, CALL_STATE_REJECTED)
+                callbackData["event"] = "endCall"
+
+                events?.success(callbackData)
+            }
+
+            ACTION_CALL_ACCEPT -> {
+                saveCallState(context?.applicationContext, callIdToProcess!!, CALL_STATE_ACCEPTED)
+
+                callbackData["event"] = "answerCall"
+
+                events?.success(callbackData)
+
+                val launchIntent = getLaunchIntent(context!!)
+                launchIntent?.action = ACTION_CALL_ACCEPT
+                context.startActivity(launchIntent)
+            }
+        }
+    }
 }
