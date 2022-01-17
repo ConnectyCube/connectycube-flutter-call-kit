@@ -59,6 +59,7 @@ class CallEvent {
   }
 
   factory CallEvent.fromMap(Map<String, dynamic> map) {
+    print('[CallEvent.fromMap] map: $map');
     return CallEvent(
       sessionId: map['session_id'] as String,
       callType: map['call_type'] as int,
@@ -67,9 +68,14 @@ class CallEvent {
       opponentsIds:
       (map['call_opponents'] as String).split(',').map(int.parse).toSet(),
       userInfo: map['user_info'] != null
-          ? Map<String, String>.from(map['user_info'] as Map<String, dynamic>)
+          ? Map<String, String>.from(jsonDecode(map['user_info']))
           : null,
     );
+
+    // userInfo: map['user_info'] == null || map['user_info'].isEmpty
+    //     ? null
+    //     : Map<String, String>.from(jsonDecode(map['user_info'])),
+
   }
 
   String toJson() => json.encode(toMap());

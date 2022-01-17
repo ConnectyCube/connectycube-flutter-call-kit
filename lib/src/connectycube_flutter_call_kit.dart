@@ -38,14 +38,14 @@ class ConnectycubeFlutterCallKit {
 
   static int _bgHandler = -1;
 
+  static Function(String newToken)? onTokenReceived;
+
   /// iOS only callbacks
-  static Function(String voipToken)? onVoipTokenReceived;
   static Function(bool isMuted, String sessionId)? onCallMuted;
 
-  /// Callback to handle rejected calls in the background
-  static CallEventHandler? _onCallRejectedWhenTerminated;
+  /// end iOS only callbacks
 
-  /// Callback to handle accepted calls in the background or terminated state
+  static CallEventHandler? _onCallRejectedWhenTerminated;
   static CallEventHandler? _onCallAcceptedWhenTerminated;
 
   static CallEventHandler? _onCallAccepted;
@@ -58,34 +58,47 @@ class ConnectycubeFlutterCallKit {
   void init({
     CallEventHandler? onCallAccepted,
     CallEventHandler? onCallRejected,
+    String? ringtone,
+    String? icon,
+    String? color
   }) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
-    // initMessagesHandler();
+
+    updateConfig(ringtone: ringtone, icon: icon, color: color);
+
     initEventsHandler();
   }
 
-  // static void initMessagesHandler() {
-  //   _methodChannel.setMethodCallHandler(_handleMethod);
-  // }
-
+  /// Set a reject call handler function which is called when the app is in the
+  /// background or terminated.
+  ///
+  /// This provided handler must be a top-level function and cannot be
+  /// anonymous otherwise an [ArgumentError] will be thrown.
   static set onCallRejectedWhenTerminated(CallEventHandler? handler) {
     _onCallRejectedWhenTerminated = handler;
 
     if (handler != null) {
-      instance.registerBackgroundCallEventHandler(handler, BackgroundCallbackName.REJECTED_IN_BACKGROUND);
+      instance._registerBackgroundCallEventHandler(
+          handler, BackgroundCallbackName.REJECTED_IN_BACKGROUND);
     }
   }
 
+  /// Set a accept call handler function which is called when the app is in the
+  /// background or terminated.
+  ///
+  /// This provided handler must be a top-level function and cannot be
+  /// anonymous otherwise an [ArgumentError] will be thrown.
   static set onCallAcceptedWhenTerminated(CallEventHandler? handler) {
     _onCallAcceptedWhenTerminated = handler;
 
     if (handler != null) {
-      instance.registerBackgroundCallEventHandler(handler, BackgroundCallbackName.ACCEPTED_IN_BACKGROUND);
+      instance._registerBackgroundCallEventHandler(
+          handler, BackgroundCallbackName.ACCEPTED_IN_BACKGROUND);
     }
   }
 
-  Future<void> registerBackgroundCallEventHandler(
+  Future<void> _registerBackgroundCallEventHandler(
       CallEventHandler handler, String callbackName) async {
     if (!Platform.isAndroid) {
       return;
@@ -110,15 +123,28 @@ class ConnectycubeFlutterCallKit {
 
   static void initEventsHandler() {
     _eventChannel.receiveBroadcastStream().listen((rawData) {
+      print('[initEventsHandler] rawData: $rawData');
       final eventData = Map<String, dynamic>.from(rawData);
 
       _processEvent(eventData);
     });
   }
 
+  /// Sets the additional configs for the Call notification
+  /// [ringtone] - the name of the ringtone source (for Anfroid it should be placed by path 'res/raw', for iOS it is a name of ringtone)
+  /// [icon] - the name of image in the `drawable` folder for Android and the name of Assests set for iOS
+  /// [color] - the color in format '#RRGGBB', applayable for Android only (notification color accent)
+  Future<void> updateConfig({String? ringtone, String? icon, String? color}) {
+    return _methodChannel.invokeMethod('updateConfig', {
+      'ringtone': ringtone,
+      'icon': icon,
+      'color': color,
+    });
+  }
+
   /// Returns VoIP token for iOS plaform.
-  /// Returns FCM token for the Android platform
-  static Future<String?> getVoipToken() {
+  /// Returns FCM token for Android platform
+  static Future<String?> getToken() {
     return _methodChannel.invokeMethod('getVoipToken', {}).then((result) {
       return result?.toString();
     });
@@ -212,31 +238,6 @@ class ConnectycubeFlutterCallKit {
     });
   }
 
-// static Future<dynamic> _handleMethod(MethodCall call) {
-//   final map = Map<String, dynamic>.from(call.arguments as Map);
-//
-//   switch (call.method) {
-//     case "onCallAccepted":
-//       var callEvent = CallEvent.fromMap(map);
-//
-//       onCallAcceptedWhenTerminated?.call(callEvent);
-//       _onCallAccepted?.call(callEvent);
-//
-//       break;
-//     case "onCallRejected":
-//       var callEvent = CallEvent.fromMap(map);
-//
-//       onCallRejectedWhenTerminated?.call(callEvent);
-//       _onCallRejected?.call(callEvent);
-//
-//       break;
-//     default:
-//       throw UnsupportedError("Unrecognized JSON message");
-//   }
-//
-//   return Future.value();
-// }
-
   static void _processEvent(Map<String, dynamic> eventData) {
     log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
 
@@ -245,13 +246,12 @@ class ConnectycubeFlutterCallKit {
 
     switch (event) {
       case 'voipToken':
-        onVoipTokenReceived?.call(eventData['voipToken']);
+        onTokenReceived?.call(arguments['voipToken']);
         break;
 
       case 'answerCall':
         var callEvent = CallEvent.fromMap(arguments);
         _onCallAccepted?.call(callEvent);
-        _onCallAcceptedWhenTerminated?.call(callEvent);
 
         break;
 
@@ -259,7 +259,6 @@ class ConnectycubeFlutterCallKit {
         var callEvent = CallEvent.fromMap(arguments);
 
         _onCallRejected?.call(callEvent);
-        _onCallRejectedWhenTerminated?.call(callEvent);
 
         break;
 
@@ -281,30 +280,6 @@ class ConnectycubeFlutterCallKit {
         throw Exception("Unrecognized event");
     }
   }
-}
-
-void _processBackgroundEvents() {
-  const MethodChannel _backgroundChannel =
-      MethodChannel('connectycube_flutter_call_kit.backgroundMethodChannel');
-
-  // 2. Setup internal state needed for MethodChannels.
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // 3. Listen for background events from the platform portion of the plugin.
-  _backgroundChannel.setMethodCallHandler((MethodCall call) async {
-    final List<dynamic> args = call.arguments;
-
-    // 3.1. Retrieve callback instance for handle.
-    final Function? callbackThis = PluginUtilities.getCallbackFromHandle(
-        CallbackHandle.fromRawHandle(args[0]));
-    assert(callbackThis != null);
-
-    // 3.2. Preprocess arguments.
-    String s = args[1] as String;
-
-    // 3.3. Invoke callback.
-    callbackThis?.call(s);
-  });
 }
 
 // This is the entrypoint for the background isolate. Since we can only enter

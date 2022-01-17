@@ -16,7 +16,7 @@ class CallStreamHandler: NSObject, FlutterStreamHandler {
         
         SwiftConnectycubeFlutterCallKitPlugin.voipController.tokenListener = { token in
             print("[CallStreamHandler][onListen] tokenListener: \(token)")
-            let data = ["event" : "voipToken", "voipToken": token]
+            let data: [String: Any] = ["event" : "voipToken", "args": ["voipToken" : token]]
             
             events(data)
         }
@@ -33,7 +33,7 @@ class CallStreamHandler: NSObject, FlutterStreamHandler {
 }
 
 public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
-    static let _methodChannelName = "connectycube_flutter_call_kit";
+    static let _methodChannelName = "connectycube_flutter_call_kit.methodChannel";
     static let _callEventChannelName = "connectycube_flutter_call_kit.callEventChannel"
     static let callController = CallKitController()
     static let voipController = VoIPController(withCallKitController: callController)
@@ -71,6 +71,13 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
         if(call.method == "getVoipToken"){
             let voipToken = SwiftConnectycubeFlutterCallKitPlugin.voipController.getVoIPToken()
             result(voipToken)
+        }
+        else if(call.method == "updateConfig"){
+            let ringtone = arguments["ringtone"] as! String
+            let icon = arguments["icon"] as! String
+            CallKitController.updateConfig(ringtone: ringtone, icon: icon)
+            
+            result(true)
         }
         else if(call.method == "showCallNotification"){
             let callId = arguments["session_id"] as! String

@@ -503,7 +503,7 @@ abstract class JobIntentService : Service() {
                 we.ensureJobId(jobId)
 
                 // Can throw on API 26+ if useWakefulService=true and app is NOT whitelisted.
-                // One example is when an FCM high priority message is received the system will
+                // One example is when a hight priority job is received the system will
                 // temporarily whitelist the app. However it is possible that it does not end up getting
                 //    whitelisted so we need to catch this and fall back to a job service.
                 try {

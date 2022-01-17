@@ -11,6 +11,7 @@ import android.os.Looper
 import android.text.TextUtils
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -126,6 +127,21 @@ class IncomingCallActivity : Activity() {
             findViewById(resources.getIdentifier("call_type_txt", "id", packageName))
         callSubTitleTxt.text =
             String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
+        val avatarImg: ImageView =
+            findViewById(resources.getIdentifier("avatar_img", "id", packageName))
+
+        val defaultImgResId = resources.getIdentifier("connectycube_place_holder", "drawable", packageName)
+        val customAvatarResName = com.connectycube.flutter.connectycube_flutter_call_kit.utils.getString(this, "icon")
+        if (TextUtils.isEmpty(customAvatarResName)){
+            avatarImg.setImageResource(defaultImgResId)
+        } else {
+            val imgResourceId = resources.getIdentifier(customAvatarResName, "drawable", packageName)
+            if (imgResourceId != 0){
+                avatarImg.setImageResource(imgResourceId)
+            } else {
+                avatarImg.setImageResource(defaultImgResId)
+            }
+        }
     }
 
     // calls from layout file

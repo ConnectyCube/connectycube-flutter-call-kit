@@ -87,7 +87,7 @@ class ConnectycubeFlutterBgPerformingService : JobIntentService() {
         fun enqueueMessageProcessing(context: Context, callEventIntent: Intent) {
             enqueueWork(
                 context,
-                FlutterConnectycubeBackgroundExecutor::class.java,
+                ConnectycubeFlutterBgPerformingService::class.java,
                 2022,
                 callEventIntent,
                 true
@@ -120,13 +120,12 @@ class ConnectycubeFlutterBgPerformingService : JobIntentService() {
          * Called once the Dart isolate (`flutterBackgroundExecutor`) has finished initializing.
          *
          *
-         * Invoked by [ConnectycubeFlutterCallKitPlugin] when it receives the `FirebaseMessaging.initialized` message. Processes all messaging events that came in while the
-         * isolate was starting.
+         * Invoked by [ConnectycubeFlutterCallKitPlugin] .
          */
         /* package */
         @SuppressLint("LongLogTag")
         fun onInitialized() {
-            Log.i(TAG, "FlutterFirebaseMessagingBackgroundService started!")
+            Log.i(TAG, "ConnectycubeFlutterBgPerformingService started!")
             synchronized(messagingQueue) {
 
                 // Handle all the message events received before the Dart isolate was

@@ -63,7 +63,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
                 result.notImplemented()
             }
         } catch (e: Exception) {
-            result.error("error", "Flutter FCM error: " + e.localizedMessage, null)
+            result.error("error", "Flutter ConnectycubeCallKit error: " + e.localizedMessage, null)
         }
     }
 
@@ -260,7 +260,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
     private fun initializeMethodChannel(isolate: BinaryMessenger) {
         // backgroundChannel is the channel responsible for receiving the following messages from
         // the background isolate that was setup by this plugin method call:
-        // - "FirebaseBackgroundMessaging#initialized"
+        // - "onBackgroundHandlerInitialized"
         //
         // This channel is also responsible for sending requests from Android to Dart to execute Dart
         // callbacks in the background isolate.

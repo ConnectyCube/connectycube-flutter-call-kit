@@ -41,7 +41,10 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
         this.applicationContext = flutterPluginBinding.applicationContext
         ContextHolder.applicationContext = this.applicationContext
         this.methodChannel =
-            MethodChannel(flutterPluginBinding.binaryMessenger, "connectycube_flutter_call_kit")
+            MethodChannel(
+                flutterPluginBinding.binaryMessenger,
+                "connectycube_flutter_call_kit.methodChannel"
+            )
         this.methodChannel.setMethodCallHandler(this)
 
         this.eventChannel =
@@ -70,22 +73,9 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                             "Fetching FCM registration token failed",
                             task.exception
                         )
-                        return@OnCompleteListener
-                    }
-
-                    val token = task.result
-                    val tokenStringId = applicationContext?.resources?.getIdentifier(
-                        "msg_token_fmt",
-                        "string",
-                        applicationContext?.packageName
-                    )
-                    if (tokenStringId != null && tokenStringId != 0) {
-                        val msg = applicationContext?.getString(tokenStringId, token)
-                        Log.d("ConnectycubeFlutterCallKitPlugin", "Received FCM token $msg")
-                        result.success(msg)
+                        result.error("error", "Fetching FCM registration token failed", null)
                     } else {
-                        Log.d("ConnectycubeFlutterCallKitPlugin", "Error while receiving FCM token")
-                        result.success(null)
+                        result.success(task.result)
                     }
                 })
             }
@@ -127,9 +117,9 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
 
                 saveBackgroundHandler(applicationContext, pluginCallbackHandle)
 
-                if(REJECTED_IN_BACKGROUND == userCallbackHandleName){
+                if (REJECTED_IN_BACKGROUND == userCallbackHandleName) {
                     saveBackgroundRejectHandler(applicationContext, userCallbackHandle)
-                } else if (ACCEPTED_IN_BACKGROUND == userCallbackHandleName){
+                } else if (ACCEPTED_IN_BACKGROUND == userCallbackHandleName) {
                     saveBackgroundAcceptHandler(applicationContext, userCallbackHandle)
                 }
 
@@ -170,6 +160,24 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     saveCallState(applicationContext, callId, CALL_STATE_PENDING)
                     saveCallData(applicationContext, callId, arguments)
                     saveCallId(applicationContext, callId)
+
+                    result.success(null)
+                } catch (e: Exception) {
+                    result.error("ERROR", e.message, "")
+                }
+            }
+
+            "updateConfig" -> {
+                try {
+                    @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
+                        call.arguments as Map<String, Any>
+                    val ringtone = arguments["ringtone"] as String?
+                    val icon = arguments["icon"] as String?
+                    val color = arguments["color"] as String?
+
+                    putString(applicationContext!!, "ringtone", ringtone)
+                    putString(applicationContext!!, "icon", icon)
+                    putString(applicationContext!!, "color", color)
 
                     result.success(null)
                 } catch (e: Exception) {
@@ -416,6 +424,7 @@ fun saveBackgroundAcceptHandler(applicationContext: Context?, callbackId: Long) 
         // ignore
     }
 }
+
 fun getBackgroundAcceptHandler(applicationContext: Context?): Long {
     if (applicationContext == null) return -1L
 
@@ -496,7 +505,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
 
             val parameters = HashMap<String, Any?>()
             parameters["event"] = "voipToken"
-            parameters["voipToken"] = token
+            parameters["args"] = { "voipToken" to token }
 
             events?.success(parameters)
             return
@@ -515,6 +524,8 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         callEventMap["call_opponents"] =
             intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")
         callEventMap["user_info"] = intent.getStringExtra(EXTRA_CALL_USER_INFO)
+
+        Log.d("ConnectycubeFlutterCallKitPlugin", "callEventMap: $callEventMap")
 
         val callbackData = HashMap<String, Any?>()
         callbackData["args"] = callEventMap
