@@ -1,3 +1,16 @@
+## 2.0.0
+Completely reworked version. Reworked the ways for interaction between the flutter app and native platforms.
+Since this version you don't need any third-party plugins for working with push notifications anymore, cause all required functionality has already been integrated into the plugin.
+
+New:
+- Added iOS support;
+- Added getting the subscription tokens (VoIP for the iOS and FCM for the Android);
+- Added customisation for ringtone, app icon, color accent (for Android);
+
+Fixes and improvements:
+- reworked callbacks `onCallRejectedWhenTerminated` and `onCallAcceptedWhenTerminated` now they fire even the app terminated or in the background;
+- migrated to `EventChannel` for sending events from native platforms to the Flutter app;
+
 ## 0.1.0-dev.2
 
 * Improved compatibility with projects which support Web platform.
