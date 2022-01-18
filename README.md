@@ -59,7 +59,7 @@ ConnectycubeFlutterCallKit.getToken().then((token) {
 
 Listen to the refresh token event:
 ```dart
-ConnectycubeFlutterCallKit.onTokenReceived = (token) {
+ConnectycubeFlutterCallKit.onTokenRefreshed = (token) {
     // use refreshed token for resubscription on your server
 };
 ```
