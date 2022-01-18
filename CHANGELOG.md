@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Minor updates
+
 ## 2.0.0
 Completely reworked version. Reworked the way of interaction between the flutter app and native platforms.
 
