@@ -1,20 +1,22 @@
-# connectycube_flutter_call_kit
+# ConnectyCube Flutter Call Kit plugin
 
 A Flutter plugin for displaying call screen when the app is in the background or terminated.
 It provides a complex solution for implementation the background calls feature in your app including getting token and displaying the Incoming call screen.
 
-At that moment plugin supports next platforms:
-- Android;
-- iOS;
+## Supported platoforms
 
-The list of main features of our plugin:
-- providing the token (FCM for Android and VoIP for iOS);
-- notifying the app about token refreshing via callback;
-- displaying the Incoming call screen when push notification was delivered on the device;
-- notifying the app about user action performed on the Incoming call screen (accept, reject, mute (for iOS));
-- providing the methods for manual managing of the Incoming screen including the manual showing the Incoming call screen;
-- getting the data about the current call during the call session;
-- some customizations according to your needs (ringtone, icon, accent color(for Android));
+- Android
+- iOS
+
+## Features
+
+- access device token (FCM for Android and VoIP for iOS)
+- notifying the app about token refreshing via callback
+- displaying the Incoming call screen when push notification was delivered on the device
+- notifying the app about user action performed on the Incoming call screen (accept, reject, mute (for iOS))
+- providing the methods for manual managing of the Incoming screen including the manual showing the Incoming call screen
+- getting the data about the current call during the call session
+- some customizations according to your app needs (ringtone, icon, accent color(for Android))
 
 
 <kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png" height="440" /></kbd> <kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd> <kbd><img alt="Flutter P2P Calls code sample, incoming call in background iOS" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios.PNG" height="440" /></kbd>
