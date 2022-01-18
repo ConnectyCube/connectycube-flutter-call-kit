@@ -8,13 +8,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.AudioAttributes
-import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.text.TextUtils
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.getColorizedText
+import com.connectycube.flutter.connectycube_flutter_call_kit.utils.getString
 
 const val CALL_CHANNEL_ID = "calls_channel_id"
 const val CALL_CHANNEL_NAME = "Calls"
@@ -40,10 +43,18 @@ fun showCallNotification(
         PendingIntent.FLAG_UPDATE_CURRENT
     )
 
-    val ringtone: Uri = RingtoneManager.getActualDefaultRingtoneUri(
-        context.applicationContext,
-        RingtoneManager.TYPE_RINGTONE
-    )
+    var ringtone: Uri
+
+    val customRingtone = getString(context, "ringtone")
+    Log.d("NotificationsManager", "customRingtone $customRingtone")
+    if (!TextUtils.isEmpty(customRingtone)) {
+        ringtone = Uri.parse("android.resource://" + context.packageName + "/raw/" + customRingtone)
+        Log.d("NotificationsManager", "ringtone 1 $ringtone")
+    } else {
+        ringtone = Settings.System.DEFAULT_RINGTONE_URI
+    }
+
+    Log.d("NotificationsManager", "ringtone 2 $ringtone")
 
     val callTypeTitle =
         String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
@@ -295,15 +306,21 @@ fun setNotificationSmallIcon(context: Context, notificationBuilder: Notification
 
 fun setNotificationColor(context: Context, notificationBuilder: NotificationCompat.Builder) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val accentID = context.resources.getIdentifier(
-            "call_notification_color_accent",
-            "color",
-            context.packageName
-        )
-        if (accentID != 0) {
-            notificationBuilder.color = context.resources.getColor(accentID, null)
+        val color = getString(context, "color")
+
+        if (!TextUtils.isEmpty(color)) {
+            notificationBuilder.color = Color.parseColor(color)
         } else {
-            notificationBuilder.color = Color.parseColor("#4CAF50")
+            val accentID = context.resources.getIdentifier(
+                "call_notification_color_accent",
+                "color",
+                context.packageName
+            )
+            if (accentID != 0) {
+                notificationBuilder.color = context.resources.getColor(accentID, null)
+            } else {
+                notificationBuilder.color = Color.parseColor("#4CAF50")
+            }
         }
     }
 }
