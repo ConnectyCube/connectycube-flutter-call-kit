@@ -3,7 +3,7 @@
 A Flutter plugin for displaying call screen when the app is in the background or terminated.
 It provides a complex solution for implementation the background calls feature in your app including getting token and displaying the Incoming call screen.
 
-## Supported platoforms
+## Supported platforms
 
 - Android
 - iOS
