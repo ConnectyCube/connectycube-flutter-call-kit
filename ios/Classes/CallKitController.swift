@@ -37,7 +37,7 @@ enum CallState : String {
 class CallKitController : NSObject {
     private let provider : CXProvider
     private let callController : CXCallController
-    var actionListener : ((CallEvent, UUID, Any?)->Void)?
+    var actionListener : ((CallEvent, UUID, [String:Any]?)->Void)?
     var currentCallData: [String: Any] = [:]
     private var callStates: [String:CallState] = [:]
     private var callsData: [String:[String:Any]] = [:]
@@ -94,10 +94,10 @@ class CallKitController : NSObject {
         callInitiatorId: Int,
         callInitiatorName: String,
         opponents: [Int],
-        userInfo: [String: String]?,
+        userInfo: String?,
         completion: ((Error?) -> Void)?
     ) {
-        print("[CallKitController][reportIncomingCall] call data: \(uuid), \(callType), \(callInitiatorId), \(callInitiatorName), \(opponents), \(userInfo ?? [:]), ")
+        print("[CallKitController][reportIncomingCall] call data: \(uuid), \(callType), \(callInitiatorId), \(callInitiatorName), \(opponents), \(userInfo ?? ""), ")
         let update = CXCallUpdate()
         update.localizedCallerName = callInitiatorName
         update.remoteHandle = CXHandle(type: .generic, value: uuid)
@@ -115,17 +115,8 @@ class CallKitController : NSObject {
                 self.currentCallData["caller_id"] = callInitiatorId
                 self.currentCallData["caller_name"] = callInitiatorName
                 self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
+                self.currentCallData["user_info"] = userInfo
                 
-                if(userInfo == nil){
-                    self.currentCallData["user_info"] = nil
-                } else {
-                    do {
-                        self.currentCallData["user_info"] = try JSONSerialization.data(withJSONObject: userInfo!)
-                    } catch {
-                        print("[CallKitController][reportIncomingCall] error parsing 'userInfo")
-                        self.currentCallData["user_info"] = nil
-                    }
-                }
                 self.callStates[uuid] = .pending
                 self.callsData[uuid] = self.currentCallData
             }
@@ -258,7 +249,7 @@ extension CallKitController: CXProviderDelegate {
     
     func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
         print("CallController: Set Held")
-        actionListener?(.setHeld, action.callUUID,action.isOnHold)
+        actionListener?(.setHeld, action.callUUID, ["isOnHold": action.isOnHold])
         action.fulfill()
     }
     

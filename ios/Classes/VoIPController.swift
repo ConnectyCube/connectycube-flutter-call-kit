@@ -61,17 +61,7 @@ extension VoIPController: PKPushRegistryDelegate {
             let callOpponentsString = callData["call_opponents"] as! String
             let callOpponents = callOpponentsString.components(separatedBy: ",")
                 .map { Int($0) ?? 0 }
-            let userInfoString = callData["user_info"] as? String
-            var userInfo: [String: String]?
-            
-            if let data = userInfoString?.data(using: .utf8) {
-                do {
-                    userInfo = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String:String]
-                } catch {
-                    print("[VoIPController][didReceiveIncomingPushWith] Can't parce JSON with userInfo")
-                    userInfo = nil
-                }
-            }
+            let userInfo = callData["user_info"] as? String
             
             self.callKitController.reportIncomingCall(uuid: callId, callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
                 print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")

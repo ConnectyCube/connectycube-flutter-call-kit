@@ -44,6 +44,8 @@ class EventReceiver : BroadcastReceiver() {
 
                 NotificationManagerCompat.from(context).cancel(callId.hashCode())
 
+                processCallEnded(context, callId!!)
+
                 if (!isApplicationForeground(context)) {
                     broadcastIntent.putExtra("userCallbackHandleName", REJECTED_IN_BACKGROUND)
                     ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
@@ -78,6 +80,8 @@ class EventReceiver : BroadcastReceiver() {
 
                 NotificationManagerCompat.from(context).cancel(callId.hashCode())
 
+                saveCallState(context, callId!!, CALL_STATE_ACCEPTED)
+
                 if (!isApplicationForeground(context)) {
                     broadcastIntent.putExtra("userCallbackHandleName", ACCEPTED_IN_BACKGROUND)
                     ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
@@ -85,6 +89,10 @@ class EventReceiver : BroadcastReceiver() {
                         broadcastIntent
                     )
                 }
+
+                val launchIntent = getLaunchIntent(context)
+                launchIntent?.action = ACTION_CALL_ACCEPT
+                context.startActivity(launchIntent)
             }
 
             ACTION_CALL_NOTIFICATION_CANCELED -> {

@@ -6,6 +6,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.ContextHolder
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import org.json.JSONObject
 
 class ConnectycubeFCMService : FirebaseMessagingService() {
 
@@ -58,7 +59,8 @@ class ConnectycubeFCMService : FirebaseMessagingService() {
         if (callOpponentsString != null) {
             callOpponents = ArrayList(callOpponentsString.split(',').map { it.toInt() })
         }
-        val userInfo = data["user_info"] ?: "{}"
+
+        val userInfo = data["user_info"] ?: JSONObject(emptyMap<String, String>()).toString()
 
         if (callType == null || callInitiatorId == null || callInitiatorName == null || callOpponents.isEmpty()) {
             return

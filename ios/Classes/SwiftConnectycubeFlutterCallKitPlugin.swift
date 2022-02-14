@@ -57,7 +57,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                                           callInitiatorId: Int,
                                           callInitiatorName: String,
                                           opponents: [Int],
-                                          userInfo: [String: String]?, result: FlutterResult?){
+                                          userInfo: String?, result: FlutterResult?){
         SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: uuid, callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: opponents, userInfo: userInfo) { (error) in
             print("[SwiftConnectycubeFlutterCallKitPlugin] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
             result?(error == nil)
@@ -87,18 +87,8 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             let callOpponentsString = arguments["call_opponents"] as! String
             let callOpponents = callOpponentsString.components(separatedBy: ",")
                 .map { Int($0) ?? 0 }
-            let userInfoString = arguments["user_info"] as! String
-            var userInfo: [String: String]?
-            
-            if let data = userInfoString.data(using: .utf8) {
-                do {
-                    userInfo = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String:String]
-                } catch {
-                    print("[SwiftConnectycubeFlutterCallKitPlugin][handle] Can't parce JSON with userInfo")
-                    userInfo = nil
-                }
-            }
-            
+            let userInfo = arguments["user_info"] as? String
+
             SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: callId, callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
                 print("[SwiftConnectycubeFlutterCallKitPlugin][handle] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
                 result(error == nil)
