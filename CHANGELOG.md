@@ -1,3 +1,8 @@
+## 2.0.2
+
+- (iOS, Android) fixed the `user_info` data transporting;
+- (Android) fixed launching the app by `acceptCall` event;
+
 ## 2.0.1
 
 * Minor updates
