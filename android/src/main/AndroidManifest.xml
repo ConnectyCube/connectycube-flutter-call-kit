@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.connectycube.flutter.connectycube_flutter_call_kit">
 
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+
     <application>
         <receiver android:name=".EventReceiver" />
         <activity

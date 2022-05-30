@@ -34,6 +34,10 @@ This plugin doesn't require complicated configs, just [connect it](https://pub.d
 apply plugin: 'com.google.gms.google-services'
 ```
 
+If your app is targeted to `targetSdkVersion 31` and you need to start the app by clicking the `Accept` 
+button you should request the permission `SYSTEM_ALERT_WINDOW` from the user first. For it, you can use 
+the plugin [`permission_handler`](https://pub.dev/packages/permission_handler).
+
 ### Prepare iOS
 
 - add next strings to your **Info.plist** file by path `your_app/ios/Runner/Info.plist`:

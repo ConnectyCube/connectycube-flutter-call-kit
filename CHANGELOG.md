@@ -1,3 +1,7 @@
+## 2.0.3
+
+- (Android) fixed the working with apps targeted to the `targetSdkVersion 31` and above;
+
 ## 2.0.2
 
 - (iOS, Android) fixed the `user_info` data transporting;
