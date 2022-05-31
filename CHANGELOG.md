@@ -1,3 +1,7 @@
+## 2.0.5
+
+- (Android) fix the compatibility with `Flutter` **3.x.x**;
+
 ## 2.0.4
 
 - (Android) update `Gradle` version to the **6.5**;
