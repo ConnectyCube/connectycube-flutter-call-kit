@@ -1,3 +1,9 @@
+## 2.0.4
+
+- (Android) update `Gradle` version to the **6.5**;
+- (Android) update `Kotlin` version to the **1.6.21**;
+- (Android) megrate from the `jcenter()` to the `mavenCentral()` dependesies repository;
+
 ## 2.0.3
 
 - (Android) fixed the working with apps targeted to the `targetSdkVersion 31` and above;
