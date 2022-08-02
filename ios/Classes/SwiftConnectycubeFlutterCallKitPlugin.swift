@@ -73,8 +73,8 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             result(voipToken)
         }
         else if(call.method == "updateConfig"){
-            let ringtone = arguments["ringtone"] as! String
-            let icon = arguments["icon"] as! String
+            let ringtone = arguments["ringtone"] as? String
+            let icon = arguments["icon"] as? String
             CallKitController.updateConfig(ringtone: ringtone, icon: icon)
             
             result(true)
