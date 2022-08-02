@@ -1,3 +1,7 @@
+## 2.0.6
+
+- (iOS) Fix crashing on startup ([#44](https://github.com/ConnectyCube/connectycube-flutter-call-kit/issues/44))
+
 ## 2.0.5
 
 - (Android) fix the compatibility with `Flutter` **3.x.x**;
