@@ -4,10 +4,10 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'connectycube_flutter_call_kit'
-  s.version          = '2.0.5'
+  s.version          = '2.0.7'
   s.summary          = 'Connectycube Call Kit plugin for flutter.'
   s.description      = <<-DESC
-A new flutter plugin project.
+Connectycube Call Kit plugin for flutter.
                        DESC
   s.homepage         = 'https://connectycube.com/'
   s.license          = { :file => '../LICENSE' }

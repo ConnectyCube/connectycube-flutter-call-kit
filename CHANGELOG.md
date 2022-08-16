@@ -1,3 +1,7 @@
+## 2.0.7
+
+- (iOS) Fix audio after accepting from killed state;
+
 ## 2.0.6
 
 - (iOS) Fix crashing on startup ([#44](https://github.com/ConnectyCube/connectycube-flutter-call-kit/issues/44))
