@@ -1,3 +1,7 @@
+## 2.0.8
+
+- (iOS) Fix second and next calls issue;
+
 ## 2.0.7
 
 - (iOS) Fix audio after accepting from killed state;

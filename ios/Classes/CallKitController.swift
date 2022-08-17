@@ -107,7 +107,7 @@ class CallKitController : NSObject {
         update.supportsHolding = false
         update.supportsDTMF = false
         
-        if (self.currentCallData["session_id"] == nil) {
+        if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
             print("[CallKitController][reportIncomingCall] report new call: \(uuid)")
             provider.reportNewIncomingCall(with: UUID(uuidString: uuid)!, update: update) { error in
                 completion?(error)
