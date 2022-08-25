@@ -1,3 +1,7 @@
+## 2.0.9
+
+- (iOS) Fix getting call state;
+
 ## 2.0.8
 
 - (iOS) Fix second and next calls issue;
