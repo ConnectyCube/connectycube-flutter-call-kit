@@ -142,7 +142,7 @@ class CallKitController : NSObject {
     
     func reportCallEnded(uuid : UUID, reason: CallEndedReason){
         print("CallKitController: report call ended: \(uuid)")
-        var cxReason : CXCallEndedReason?
+        var cxReason : CXCallEndedReason
         switch reason {
         case .unanswered:
             cxReason = CXCallEndedReason.unanswered
@@ -151,20 +151,21 @@ class CallKitController : NSObject {
         default:
             cxReason = CXCallEndedReason.failed
         }
-        self.callStates[uuid.uuidString] = .pending
-        self.provider.reportCall(with: uuid, endedAt: Date.init(), reason: cxReason!)
+        self.callStates[uuid.uuidString.lowercased()] = .rejected
+        self.provider.reportCall(with: uuid, endedAt: Date.init(), reason: cxReason)
     }
     
     func getCallState(uuid: String) -> CallState {
-        return self.callStates[uuid] ?? .unknown
+        print("CallKitController: getCallState: \(self.callStates[uuid.lowercased()] ?? .unknown)")
+        return self.callStates[uuid.lowercased()] ?? .unknown
     }
     
     func setCallState(uuid: String, callState: String){
-        self.callStates[uuid] = CallState(rawValue: callState)
+        self.callStates[uuid.lowercased()] = CallState(rawValue: callState)
     }
     
     func getCallData(uuid: String) -> [String: Any]{
-        return self.callsData[uuid] ?? [:]
+        return self.callsData[uuid.lowercased()] ?? [:]
     }
     
     func clearCallData(uuid: String){
@@ -195,7 +196,7 @@ extension CallKitController {
         let endCallAction = CXEndCallAction(call: uuid)
         let transaction = CXTransaction(action: endCallAction)
         
-        self.callStates[uuid.uuidString] = .rejected
+        self.callStates[uuid.uuidString.lowercased()] = .rejected
         requestTransaction(transaction)
     }
     
@@ -236,7 +237,7 @@ extension CallKitController {
         
         let transaction = CXTransaction(action: startCallAction)
         
-        self.callStates[uuid!] = .accepted
+        self.callStates[uuid!.lowercased()] = .accepted
         
         requestTransaction(transaction)
     }
@@ -249,9 +250,9 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-        print("CallKitController: Answer Call")
-        actionListener?(.answerCall,action.callUUID,currentCallData)
-        self.callStates[action.callUUID.uuidString] = .accepted
+        print("CallKitController: Answer Call \(action.callUUID.uuidString)")
+        actionListener?(.answerCall, action.callUUID, currentCallData)
+        self.callStates[action.callUUID.uuidString.lowercased()] = .accepted
         action.fulfill()
     }
     
@@ -266,8 +267,8 @@ extension CallKitController: CXProviderDelegate {
     
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("CallKitController: End Call")
-        actionListener?(.endCall, action.callUUID,currentCallData)
-        self.callStates[action.callUUID.uuidString] = .rejected
+        actionListener?(.endCall, action.callUUID, currentCallData)
+        self.callStates[action.callUUID.uuidString.lowercased()] = .rejected
         action.fulfill()
     }
     
@@ -280,9 +281,9 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         print("CallKitController: Mute call")
         if (action.isMuted){
-            actionListener?(.setMuted, action.callUUID,currentCallData)
+            actionListener?(.setMuted, action.callUUID, currentCallData)
         } else {
-            actionListener?(.setUnMuted, action.callUUID,currentCallData)
+            actionListener?(.setUnMuted, action.callUUID, currentCallData)
         }
         
         action.fulfill()
@@ -291,7 +292,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("CallKitController: Start Call")
         actionListener?(.startCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString] = .accepted
+        self.callStates[action.callUUID.uuidString.lowercased()] = .accepted
         action.fulfill()
     }
 }

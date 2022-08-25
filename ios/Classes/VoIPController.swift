@@ -63,7 +63,7 @@ extension VoIPController: PKPushRegistryDelegate {
                 .map { Int($0) ?? 0 }
             let userInfo = callData["user_info"] as? String
             
-            self.callKitController.reportIncomingCall(uuid: callId, callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
+            self.callKitController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
                 if(error == nil){
                     print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
                 } else {

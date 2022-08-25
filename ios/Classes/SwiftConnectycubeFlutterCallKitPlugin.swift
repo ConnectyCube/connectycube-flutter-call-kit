@@ -7,7 +7,7 @@ class CallStreamHandler: NSObject, FlutterStreamHandler {
         print("[CallStreamHandler][onListen]");
         SwiftConnectycubeFlutterCallKitPlugin.callController.actionListener = { event, uuid, args in
             print("[CallStreamHandler][onListen] actionListener: \(event)")
-            var data = ["event" : event.rawValue, "uuid": uuid.uuidString] as [String: Any]
+            var data = ["event" : event.rawValue, "uuid": uuid.uuidString.lowercased()] as [String: Any]
             if args != nil{
                 data["args"] = args!
             }
@@ -58,7 +58,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                                           callInitiatorName: String,
                                           opponents: [Int],
                                           userInfo: String?, result: FlutterResult?){
-        SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: uuid, callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: opponents, userInfo: userInfo) { (error) in
+        SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: uuid.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: opponents, userInfo: userInfo) { (error) in
             print("[SwiftConnectycubeFlutterCallKitPlugin] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
             result?(error == nil)
         }
@@ -89,7 +89,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                 .map { Int($0) ?? 0 }
             let userInfo = arguments["user_info"] as? String
 
-            SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: callId, callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
+            SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
                 print("[SwiftConnectycubeFlutterCallKitPlugin][handle] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
                 result(error == nil)
             }
