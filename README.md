@@ -3,7 +3,8 @@
 # ConnectyCube Flutter Call Kit plugin
 
 A Flutter plugin for displaying call screen when the app is in the background or terminated.
-It provides a complex solution for implementation the background calls feature in your app including getting token and displaying the Incoming call screen.
+It provides a complex solution for implementation the background calls feature in your app including 
+getting token and displaying the Incoming call screen.
 
 ## Supported platforms
 
@@ -26,7 +27,8 @@ It provides a complex solution for implementation the background calls feature i
 
 ## Configure your project
 
-This plugin doesn't require complicated configs, just [connect it](https://pub.dev/packages/connectycube_flutter_call_kit/install) as usual flutter plugin to your app and do the next simple actions:
+This plugin doesn't require complicated configs, just [connect it](https://pub.dev/packages/connectycube_flutter_call_kit/install) 
+as usual flutter plugin to your app and do the next simple actions:
 
 ### Prepare Android
 
@@ -70,10 +72,16 @@ ConnectycubeFlutterCallKit.onTokenRefreshed = (token) {
 };
 ```
 ### Customize the plugin
-We added a helpful method for customization the plugin according to your needs. At this moment you can customize the ringtone, icon, and color accent. Use the next method for it:
+We added a helpful method for customization the plugin according to your needs. At this moment you 
+can customize the ringtone, application icon, noitification small icon (Android only) 
+and notification accent color (Android only). Use the next method for it:
 
 ```dart
-ConnectycubeFlutterCallKit.instance.updateConfig(ringtone: 'custom_ringtone', icon: 'app_icon', color: '#07711e');
+ConnectycubeFlutterCallKit.instance.updateConfig(
+  ringtone: 'custom_ringtone', 
+  icon: 'app_icon', 
+  notificationIcon: 'ic_notification', 
+  color: '#07711e');
 ```
 
 ### Show Incoming call notification
@@ -119,7 +127,8 @@ ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated = onCallRejectedWhenTerm
 ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerminated;
 ```
 
-!> Attention: the functions `onCallRejectedWhenTerminated` and `onCallAcceptedWhenTerminated` must be a top-level function and cannot be anonymous
+!> Attention: the functions `onCallRejectedWhenTerminated` and `onCallAcceptedWhenTerminated` must 
+be a top-level function and cannot be anonymous
 
 ### Get the call state
 
@@ -145,7 +154,8 @@ Then you can get the state of this call using `getCallState`.
 
 ### Notify the plugin about processing the call on the Flutter app side
 
-For dismissing the Incoming call screen (or the Call Kit for iOS) you should notify the plugin about these events.
+For dismissing the Incoming call screen (or the Call Kit for iOS) you should notify the plugin about 
+these events.
 Use next functions for it:
 
 ```dart
@@ -154,7 +164,8 @@ ConnectycubeFlutterCallKit.reportCallEnded(sessionId: uuid);
 ```
 
 ### Clear call data
-After finishing the call you can clear all data on the plugin side related to this call, call the next code for it
+After finishing the call you can clear all data on the plugin side related to this call, call the 
+next code for it
 
 ```dart
 await ConnectycubeFlutterCallKit.clearCallData(sessionId: sessionId);
@@ -162,7 +173,8 @@ await ConnectycubeFlutterCallKit.clearCallData(sessionId: sessionId);
 
 ### Manage the app visibility on the lock screen (Android only)
 
-In case you need to show your app after accepting the call from the lock screen you can do it using the method
+In case you need to show your app after accepting the call from the lock screen you can do it using 
+the method
 ```dart
 ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: true);
 ```
@@ -173,7 +185,8 @@ ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: false);
 ```
 
 ## Show Incoming call screen by push notification
-In case you want to display the Incoming call screen automatically by push notification you can do it easily. For it, the caller should send the push notification to all call members. This push notification should contain some required parameters. If you use the [Connectycube Flutter SDK](https://pub.dev/packages/connectycube_sdk), you can do it using the next code:
+In case you want to display the Incoming call screen automatically by push notification you can do 
+it easily. For it, the caller should send the push notification to all call members. This push notification should contain some required parameters. If you use the [Connectycube Flutter SDK](https://pub.dev/packages/connectycube_sdk), you can do it using the next code:
 
 ```dart
 CreateEventParams params = CreateEventParams();
@@ -199,6 +212,7 @@ createEvent(params.getEventForRequest()).then((cubeEvent) {
 });
 ```
 
-For hiding the Incoming call screen via push notification use a similar request but with a different `signal_type`, it can be `'endCall'` or `'rejectCall'`.
+For hiding the Incoming call screen via push notification use a similar request but with a 
+different `signal_type`, it can be `'endCall'` or `'rejectCall'`.
 
 You can check how this plugin works in our [P2P Calls code sample](https://github.com/ConnectyCube/connectycube-flutter-samples/tree/master/p2p_call_sample).

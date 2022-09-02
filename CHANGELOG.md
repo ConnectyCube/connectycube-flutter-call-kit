@@ -1,3 +1,7 @@
+## 2.1.0
+
+- (Android) Add the possibility of setting a Notification icon;
+
 ## 2.0.9
 
 - (iOS) Fix getting call state;
