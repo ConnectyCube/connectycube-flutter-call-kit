@@ -16,15 +16,17 @@ import androidx.annotation.NonNull
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.connectycube.flutter.connectycube_flutter_call_kit.background_isolates.ConnectycubeFlutterBgPerformingService
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.*
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import io.flutter.embedding.engine.FlutterShellArgs
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.*
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 
 
 /** ConnectycubeFlutterCallKitPlugin */
@@ -66,7 +68,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "getVoipToken" -> {
-                FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                     if (!task.isSuccessful) {
                         Log.w(
                             "ConnectycubeFlutterCallKitPlugin",
@@ -77,16 +79,16 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     } else {
                         result.success(task.result)
                     }
-                })
+                }
             }
 
             "startBackgroundIsolate" -> {
                 @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
                     call.arguments as Map<String, Any>
 
-                var pluginCallbackHandle: Long = -1L
-                var userCallbackHandle: Long = -1L
-                var userCallbackHandleName: String =
+                val pluginCallbackHandle: Long
+                val userCallbackHandle: Long
+                val userCallbackHandleName: String =
                     arguments["userCallbackHandleName"]?.toString() ?: ""
 
 
@@ -173,10 +175,12 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         call.arguments as Map<String, Any>
                     val ringtone = arguments["ringtone"] as String?
                     val icon = arguments["icon"] as String?
+                    val notificationIcon = arguments["notification_icon"] as String?
                     val color = arguments["color"] as String?
 
                     putString(applicationContext!!, "ringtone", ringtone)
                     putString(applicationContext!!, "icon", icon)
+                    putString(applicationContext!!, "notification_icon", notificationIcon)
                     putString(applicationContext!!, "color", color)
 
                     result.success(null)
@@ -495,6 +499,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         localBroadcastManager.unregisterReceiver(this)
     }
 
+    @SuppressLint("LongLogTag")
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent == null || TextUtils.isEmpty(intent.action)) return
 

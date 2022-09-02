@@ -55,17 +55,21 @@ class ConnectycubeFlutterCallKit {
   ///
   /// - This function should only be called once at the beginning of
   /// your application.
-  void init({
-    CallEventHandler? onCallAccepted,
-    CallEventHandler? onCallRejected,
-    String? ringtone,
-    String? icon,
-    String? color
-  }) {
+  void init(
+      {CallEventHandler? onCallAccepted,
+      CallEventHandler? onCallRejected,
+      String? ringtone,
+      String? icon,
+      String? notificationIcon,
+      String? color}) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
 
-    updateConfig(ringtone: ringtone, icon: icon, color: color);
+    updateConfig(
+        ringtone: ringtone,
+        icon: icon,
+        notificationIcon: notificationIcon,
+        color: color);
 
     initEventsHandler();
   }
@@ -133,11 +137,17 @@ class ConnectycubeFlutterCallKit {
   /// Sets the additional configs for the Call notification
   /// [ringtone] - the name of the ringtone source (for Anfroid it should be placed by path 'res/raw', for iOS it is a name of ringtone)
   /// [icon] - the name of image in the `drawable` folder for Android and the name of Assests set for iOS
-  /// [color] - the color in format '#RRGGBB', applayable for Android only (notification color accent)
-  Future<void> updateConfig({String? ringtone, String? icon, String? color}) {
+  /// [notificationIcon] - the name of the image in the `drawable` folder, uses as Notification Small Icon for Android, ignored for iOS
+  /// [color] - the color in the format '#RRGGBB', uses as an Android Notification accent color, ignored for iOS
+  Future<void> updateConfig(
+      {String? ringtone,
+      String? icon,
+      String? notificationIcon,
+      String? color}) {
     return _methodChannel.invokeMethod('updateConfig', {
       'ringtone': ringtone,
       'icon': icon,
+      'notification_icon': notificationIcon,
       'color': color,
     });
   }
