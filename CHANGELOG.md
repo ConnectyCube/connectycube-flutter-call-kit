@@ -1,3 +1,10 @@
+## 2.2.0
+
+- (iOS) Fix notifying plugin about call accepting;
+
+Broken API:
+  - changed the signature of method `reportCallAccepted` by deleting the parameter `callType`;
+
 ## 2.1.0
 
 - (Android) Add the possibility of setting a Notification icon;

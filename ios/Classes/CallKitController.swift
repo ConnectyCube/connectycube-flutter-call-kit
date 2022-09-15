@@ -203,7 +203,7 @@ extension CallKitController {
     private func requestTransaction(_ transaction: CXTransaction) {
         callController.request(transaction) { error in
             if let error = error {
-                print("CallKitController: Error requesting transaction: \(error)")
+                print("CallKitController: Error requesting transaction: \(error.localizedDescription)")
             } else {
                 print("CallKitController: Requested transaction successfully")
             }
@@ -229,9 +229,9 @@ extension CallKitController {
     }
     
     func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
-        print("CallKitController: user requested start call \(handle)")
+        print("CallKitController: user requested start call handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "")")
         let handle = CXHandle(type: .generic, value: handle)
-        let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!);
+        let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!)
         let startCallAction = CXStartCallAction(call: callUUID!, handle: handle)
         startCallAction.isVideo = videoEnabled
         
@@ -239,7 +239,18 @@ extension CallKitController {
         
         self.callStates[uuid!.lowercased()] = .accepted
         
-        requestTransaction(transaction)
+        requestTransaction(transaction);
+    }
+    
+    func answerCall(uuid: String) {
+        print("CallKitController: user requested answer call, uuid: \(uuid)")
+        let callUUID = UUID(uuidString: uuid)
+        let answerCallAction = CXAnswerCallAction(call: callUUID!)
+        let transaction = CXTransaction(action: answerCallAction)
+        
+        self.callStates[uuid.lowercased()] = .accepted
+        
+        requestTransaction(transaction);
     }
 }
 
