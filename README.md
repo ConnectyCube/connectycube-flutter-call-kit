@@ -162,7 +162,7 @@ these events.
 Use next functions for it:
 
 ```dart
-ConnectycubeFlutterCallKit.reportCallAccepted(sessionId: uuid, callType: callType);
+ConnectycubeFlutterCallKit.reportCallAccepted(sessionId: uuid);
 ConnectycubeFlutterCallKit.reportCallEnded(sessionId: uuid);
 ```
 
