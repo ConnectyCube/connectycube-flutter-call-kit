@@ -1,3 +1,7 @@
+## 2.2.1
+
+- (Android) Fix receiving the FCM if plugin connected together with `firebase_messaging` plugin;
+
 ## 2.2.0
 
 - (iOS) Fix notifying plugin about call accepting;
