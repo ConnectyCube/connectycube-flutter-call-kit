@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.connectycube.flutter.connectycube_flutter_call_kit">
 
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application>
         <receiver android:name=".EventReceiver" />
@@ -15,10 +15,11 @@
             android:taskAffinity="com.connectycube.flutter.connectycube_flutter_call_kit.INCOMING_CALL_AFFINITY"
             android:theme="@android:style/Theme.Holo.NoActionBar"
             android:turnScreenOn="true" />
+
         <service
             android:name=".background_isolates.ConnectycubeFlutterBgPerformingService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="false"/>
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name=".ConnectycubeFCMService"
             android:exported="false">
@@ -27,5 +28,13 @@
             </intent-filter>
         </service>
 
+        <receiver
+            android:name=".ConnectycubeFCMReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

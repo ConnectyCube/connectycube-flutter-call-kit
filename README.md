@@ -38,9 +38,12 @@ as usual flutter plugin to your app and do the next simple actions:
 apply plugin: 'com.google.gms.google-services'
 ```
 
-If your app is targeted to `targetSdkVersion 31` and you need to start the app by clicking the `Accept` 
+If your app is targeted to `targetSdkVersion 31` and above and you need to start the app by clicking the `Accept` 
 button you should request the permission `SYSTEM_ALERT_WINDOW` from the user first. For it, you can use 
 the plugin [`permission_handler`](https://pub.dev/packages/permission_handler).
+
+If your app is targeted to `targetSdkVersion 33` and above you should request the permission 
+`POST_NOTIFICATIONS` from the user first.
 
 ### Prepare iOS
 
