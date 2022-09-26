@@ -8,8 +8,7 @@
 import Foundation
 import AVFoundation
 import CallKit
-
-
+import WebRTC
 
 enum CallEvent : String {
     case answerCall = "answerCall"
@@ -109,11 +108,12 @@ class CallKitController : NSObject {
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
             print("[CallKitController][reportIncomingCall] report new call: \(uuid)")
+            
+            self.initializeAudioSession()
+            
             provider.reportNewIncomingCall(with: UUID(uuidString: uuid)!, update: update) { error in
                 completion?(error)
                 if(error == nil){
-                    self.configureAudioSession()
-                    
                     self.currentCallData["session_id"] = uuid
                     self.currentCallData["call_type"] = callType
                     self.currentCallData["caller_id"] = callInitiatorId
@@ -173,17 +173,57 @@ class CallKitController : NSObject {
         self.callsData.removeAll()
     }
     
-    func configureAudioSession(){
-        let audioSession = AVAudioSession.sharedInstance()
-        
+    func initializeAudioSession(){
+        let configuration = RTCAudioSessionConfiguration()
+        configuration.category = AVAudioSession.Category.playAndRecord.rawValue
+//        configuration.categoryOptions.insert(.duckOthers)
+        configuration.categoryOptions.insert(.mixWithOthers)
+
+        // adding blutetooth support
+        configuration.categoryOptions.insert(.allowBluetooth)
+        configuration.categoryOptions.insert(.allowBluetoothA2DP)
+
+        // adding airplay support
+        configuration.categoryOptions.insert(.allowAirPlay)
+        configuration.mode = AVAudioSession.Mode.voiceChat.rawValue
+
+        RTCAudioSession.sharedInstance().lockForConfiguration()
         do {
-            try audioSession.setCategory(AVAudioSession.Category.playback, options: AVAudioSession.CategoryOptions.allowBluetooth)
-            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
-            try audioSession.setPreferredSampleRate(44100.0)
-            try audioSession.setPreferredIOBufferDuration(0.005)
-            try audioSession.setActive(true)
+            try RTCAudioSession.sharedInstance().setConfiguration(configuration)
         } catch {
-            print(error)
+            print("CallKitController: configureAudioSession: Error occurs during setting audio config. Error: \(error)")
+        }
+        RTCAudioSession.sharedInstance().unlockForConfiguration()
+        
+        RTCAudioSession.sharedInstance().useManualAudio = true
+        RTCAudioSession.sharedInstance().isAudioEnabled = false
+    }
+    
+    func activateAudioSession(audioSession: AVAudioSession){
+        RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)
+        RTCAudioSession.sharedInstance().isAudioEnabled = true
+    }
+    
+    func deactivateAudioSession(audioSession: AVAudioSession){
+        if(!RTCAudioSession.sharedInstance().isActive){
+            return
+        }
+        
+        RTCAudioSession.sharedInstance().audioSessionDidDeactivate(audioSession)
+    }
+    
+    func disposeAudioSession(){
+        RTCAudioSession.sharedInstance().isAudioEnabled = false
+        RTCAudioSession.sharedInstance().useManualAudio = false
+
+        if (RTCAudioSession.sharedInstance().isActive){
+            do {
+                RTCAudioSession.sharedInstance().lockForConfiguration()
+                try RTCAudioSession.sharedInstance().setActive(false)
+                RTCAudioSession.sharedInstance().unlockForConfiguration()
+            } catch {
+                print("CallKitController: disposeAudioSession: deactivation audio session error: \(error)")
+            }
         }
     }
 }
@@ -257,7 +297,7 @@ extension CallKitController {
 //MARK: System notifications
 extension CallKitController: CXProviderDelegate {
     func providerDidReset(_ provider: CXProvider) {
-        
+        print("CallKitController: providerDidReset")
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
@@ -268,18 +308,20 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
-        print("CallKitController: Audio session activated")
-        self.configureAudioSession()
+        print("CallKitController: Audio sessionCallKitController: Audio session activated")
+        self.activateAudioSession(audioSession: audioSession)
     }
     
     func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         print("CallKitController: Audio session deactivated")
+        self.deactivateAudioSession(audioSession: audioSession)
     }
     
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("CallKitController: End Call")
         actionListener?(.endCall, action.callUUID, currentCallData)
         self.callStates[action.callUUID.uuidString.lowercased()] = .rejected
+        self.disposeAudioSession()
         action.fulfill()
     }
     
@@ -307,5 +349,3 @@ extension CallKitController: CXProviderDelegate {
         action.fulfill()
     }
 }
-
-
