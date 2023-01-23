@@ -236,7 +236,7 @@ class ConnectycubeFlutterCallKit {
   }
 
   /// Remove the last displayed call to avoid that this is is returned on the next app start
-  static Future<String?> removeLastCallId() async {
+  static Future<void> removeLastCallId() async {
     return _methodChannel.invokeMethod("removeLastCallId");
   }
 

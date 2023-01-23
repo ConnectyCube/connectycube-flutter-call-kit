@@ -295,7 +295,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                 try {
                     applicationContext?.let { remove(it, LAST_CALL_ID) }
 
-                    result.success(true)
+                    result.success(null)
                 } catch (e: Exception) {
                     result.error("ERROR", e.message, "")
                 }
