@@ -1,6 +1,7 @@
 package com.connectycube.flutter.connectycube_flutter_call_kit
 
 const val EXTRA_CALL_ID = "extra_call_id"
+const val LAST_CALL_ID = "last_call_id"
 const val EXTRA_CALL_TYPE = "extra_call_type"
 const val EXTRA_CALL_INITIATOR_ID = "extra_call_initiator_id"
 const val EXTRA_CALL_INITIATOR_NAME = "extra_call_initiator_name"

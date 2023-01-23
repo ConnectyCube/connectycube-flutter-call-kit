@@ -70,18 +70,14 @@ fun mapToJsonString(map: Map<String, *>): String? {
 fun getMapFromJsonString(json: String): Map<String, String>? {
     if (TextUtils.isEmpty(json)) return null
 
-    val result: Map<String, String>?
-
-    try {
+    return try {
         val jsonObj = JSONObject(json)
-        result = jsonObj.toMap().mapValues {
+        jsonObj.toMap().mapValues {
             it.value.toString()
         }
     } catch (e: Exception) {
-        return null
+        null
     }
-
-    return result
 }
 
 fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith { it ->

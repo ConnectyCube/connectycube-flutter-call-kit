@@ -168,14 +168,14 @@ class ConnectycubeFlutterCallKit {
 
   /// Report that the current active call has been accepted by your application
   ///
-  static Future<void> reportCallAccepted({required String? sessionId}) async {
+  static Future<void> reportCallAccepted({required String sessionId}) async {
     return _methodChannel
         .invokeMethod("reportCallAccepted", {'session_id': sessionId});
   }
 
   /// Report that the current active call has been ended by your application
   static Future<void> reportCallEnded({
-    required String? sessionId,
+    required String sessionId,
   }) async {
     return _methodChannel.invokeMethod("reportCallEnded", {
       'session_id': sessionId,
@@ -186,7 +186,7 @@ class ConnectycubeFlutterCallKit {
   ///
   /// Other platforms than Android and iOS will receive [CallState.unknown]
   static Future<String> getCallState({
-    required String? sessionId,
+    required String sessionId,
   }) async {
     return _methodChannel.invokeMethod("getCallState", {
       'session_id': sessionId,
@@ -208,7 +208,7 @@ class ConnectycubeFlutterCallKit {
 
   /// Retrieves call information about the call
   static Future<Map<String, dynamic>?> getCallData({
-    required String? sessionId,
+    required String sessionId,
   }) async {
     return _methodChannel.invokeMethod("getCallData", {
       'session_id': sessionId,
@@ -222,7 +222,7 @@ class ConnectycubeFlutterCallKit {
 
   /// Cleans all data related to the call
   static Future<void> clearCallData({
-    required String? sessionId,
+    required String sessionId,
   }) async {
     return _methodChannel.invokeMethod("clearCallData", {
       'session_id': sessionId,
@@ -233,6 +233,11 @@ class ConnectycubeFlutterCallKit {
   /// It is useful on starting app step for navigation to the call screen if the call was accepted
   static Future<String?> getLastCallId() async {
     return _methodChannel.invokeMethod("getLastCallId");
+  }
+
+  /// Remove the last displayed call to avoid that this is is returned on the next app start
+  static Future<String?> removeLastCallId() async {
+    return _methodChannel.invokeMethod("removeLastCallId");
   }
 
   static Future<void> setOnLockScreenVisibility({
