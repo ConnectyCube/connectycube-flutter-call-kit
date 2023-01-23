@@ -183,6 +183,10 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
         else if call.method == "getLastCallId" {
             result(SwiftConnectycubeFlutterCallKitPlugin.callController.currentCallData["session_id"])
         }
+        else if call.method == "removeLastCallId" {
+            SwiftConnectycubeFlutterCallKitPlugin.callController.currentCallData.removeAll()
+            result(nil)
+        }
         else {
             result(FlutterMethodNotImplemented)
         }
