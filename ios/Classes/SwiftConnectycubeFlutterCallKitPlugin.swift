@@ -67,19 +67,27 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     //TODO: remove these defaults and get as arguments
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         print("[SwiftConnectycubeFlutterCallKitPlugin][handle] method: \(call.method)");
-        let arguments = call.arguments as! Dictionary<String, Any>
-        if(call.method == "getVoipToken"){
+        let arguments = call.arguments as? Dictionary<String, Any>
+        if call.method == "getVoipToken" {
             let voipToken = SwiftConnectycubeFlutterCallKitPlugin.voipController.getVoIPToken()
             result(voipToken)
         }
-        else if(call.method == "updateConfig"){
+        else if call.method == "updateConfig" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
             let ringtone = arguments["ringtone"] as? String
             let icon = arguments["icon"] as? String
             CallKitController.updateConfig(ringtone: ringtone, icon: icon)
             
             result(true)
         }
-        else if(call.method == "showCallNotification"){
+        else if call.method == "showCallNotification" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
             let callId = arguments["session_id"] as! String
             let callType = arguments["call_type"] as! Int
             let callInitiatorId = arguments["caller_id"] as! Int
@@ -94,13 +102,20 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                 result(error == nil)
             }
         }
-        else if(call.method == "reportCallAccepted"){
-            let callId = arguments["session_id"] as! String
+        else if call.method == "reportCallAccepted" {
+            guard let arguments = arguments, let callId = arguments["session_id"] as? String else {
+                result(FlutterError(code: "invalid_argument", message: "session_id was not provided.", details: nil))
+                return
+            }
 
             SwiftConnectycubeFlutterCallKitPlugin.callController.answerCall(uuid: callId)
             result(true)
         }
-        else if (call.method == "reportCallFinished"){
+        else if call.method == "reportCallFinished" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
             let callId = arguments["session_id"] as! String
             let reason = arguments["reason"] as! String
             
@@ -108,24 +123,39 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             SwiftConnectycubeFlutterCallKitPlugin.callController.reportCallEnded(uuid: UUID(uuidString: callId)!, reason: CallEndedReason.init(rawValue: reason)!);
             result(true);
         }
-        else if (call.method == "reportCallEnded"){
+        else if call.method == "reportCallEnded" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
             let callId = arguments["session_id"] as! String
             SwiftConnectycubeFlutterCallKitPlugin.callController.end(uuid: UUID(uuidString: callId)!)
             result(true)
         }
-        else if (call.method == "muteCall"){
+        else if call.method == "muteCall" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
             let callId = arguments["session_id"] as! String
             let muted = arguments["muted"] as! Bool
             
             SwiftConnectycubeFlutterCallKitPlugin.callController.setMute(uuid: UUID(uuidString: callId)!, muted: muted)
             result(true)
         }
-        else if (call.method == "getCallState"){
-            let callId = arguments["session_id"] as! String
+        else if call.method == "getCallState" {
+            guard let arguments = arguments, let callId = arguments["session_id"] as? String else {
+                result(FlutterError(code: "invalid_argument", message: "session_id was not provided.", details: nil))
+                return
+            }
             
             result(SwiftConnectycubeFlutterCallKitPlugin.callController.getCallState(uuid: callId).rawValue)
         }
-        else if (call.method == "setCallState"){
+        else if call.method == "setCallState" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
             let callId = arguments["session_id"] as! String
             let callState = arguments["call_state"] as! String
             
@@ -133,19 +163,28 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             result(true)
         }
         
-        else if (call.method == "getCallData"){
-            let callId = arguments["session_id"] as! String
+        else if call.method == "getCallData" {
+            guard let arguments = arguments, let callId = arguments["session_id"] as? String else {
+                result(FlutterError(code: "invalid_argument", message: "session_id was not provided.", details: nil))
+                return
+            }
             
             result(SwiftConnectycubeFlutterCallKitPlugin.callController.getCallData(uuid: callId))
         }
-        else if (call.method == "clearCallData"){
-            let callId = arguments["session_id"] as! String
+        else if call.method == "clearCallData" {
+            guard let arguments = arguments, let callId = arguments["session_id"] as? String else {
+                result(FlutterError(code: "invalid_argument", message: "session_id was not provided.", details: nil))
+                return
+            }
             
             SwiftConnectycubeFlutterCallKitPlugin.callController.clearCallData(uuid: callId)
             result(true)
         }
-        else if (call.method == "getLastCallId"){
+        else if call.method == "getLastCallId" {
             result(SwiftConnectycubeFlutterCallKitPlugin.callController.currentCallData["session_id"])
+        }
+        else {
+            result(FlutterMethodNotImplemented)
         }
     }
 }
