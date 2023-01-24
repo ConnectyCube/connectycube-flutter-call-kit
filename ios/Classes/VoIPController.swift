@@ -54,16 +54,15 @@ extension VoIPController: PKPushRegistryDelegate {
         let callData = payload.dictionaryPayload
         
         if type == .voIP{
-            let callId = callData["session_id"] as! String
-            let callType = callData["call_type"] as! String
-            let callInitiatorId = callData["caller_id"] as! String
-            let callInitiatorName = callData["caller_name"] as! String
-            let callOpponentsString = callData["call_opponents"] as! String
-            let callOpponents = callOpponentsString.components(separatedBy: ",")
-                .map { Int($0) ?? 0 }
-            let userInfo = callData["user_info"] as? String
+            let sessionId = UUID(uuidString: callData["session_id"] as! String)!
             
-            self.callKitController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
+            let callId = callData["call_id"] as! String
+            
+            let callerName = callData["caller_name"] as! String
+            
+            self.callKitController.reportIncomingCall(
+                sessionId: sessionId, callId: callId, callerName: callerName
+            ) { (error) in
                 if(error == nil){
                     print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
                 } else {

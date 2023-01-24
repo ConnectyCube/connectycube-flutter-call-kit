@@ -39,8 +39,8 @@ class CallKitController : NSObject {
     private let callController : CXCallController
     var actionListener : ((CallEvent, UUID, [String:Any]?)->Void)?
     var currentCallData: [String: Any] = [:]
-    private var callStates: [String:CallState] = [:]
-    private var callsData: [String:[String:Any]] = [:]
+    private var callStates: [UUID:CallState] = [:]
+    private var callsData: [UUID:[String:Any]] = [:]
     
     override init() {
         self.provider = CXProvider(configuration: CallKitController.providerConfiguration)
@@ -72,16 +72,12 @@ class CallKitController : NSObject {
         return providerConfiguration
     }()
     
-    static func updateConfig(
-        ringtone: String?,
-        icon: String?
-        
-    ) {
+    static func updateConfig(ringtone: String?, icon: String?) {
         if(ringtone != nil){
             providerConfiguration.ringtoneSound = ringtone
         }
         
-        if(icon != nil){
+        if(icon != nil) {
             let iconImage = UIImage(named: icon!)
             let iconData = iconImage?.pngData()
             providerConfiguration.iconTemplateImageData = iconData
@@ -89,45 +85,40 @@ class CallKitController : NSObject {
     }
     
     func reportIncomingCall(
-        uuid: String,
-        callType: String,
-        callInitiatorId: String,
-        callInitiatorName: String,
-        opponents: [Int],
-        userInfo: String?,
+        sessionId: UUID,
+        callId: String,
+        callerName: String,
         completion: ((Error?) -> Void)?
     ) {
-        print("[CallKitController][reportIncomingCall] call data: \(uuid), \(callType), \(callInitiatorId), \(callInitiatorName), \(opponents), \(userInfo ?? ""), ")
+        print("[CallKitController][reportIncomingCall] call data: \(sessionId), \(callId), \(callerName)")
         let update = CXCallUpdate()
-        update.localizedCallerName = callInitiatorName
-        update.remoteHandle = CXHandle(type: .generic, value: uuid)
-        update.hasVideo = callType == "1"
+        update.localizedCallerName = callerName
+        update.remoteHandle = CXHandle(type: .generic, value: sessionId.uuidString)
+        update.hasVideo = true
         update.supportsGrouping = false
         update.supportsUngrouping = false
         update.supportsHolding = false
         update.supportsDTMF = false
         
-        if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
-            print("[CallKitController][reportIncomingCall] report new call: \(uuid)")
-            provider.reportNewIncomingCall(with: UUID(uuidString: uuid)!, update: update) { error in
+        if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != sessionId.uuidString) {
+            print("[CallKitController][reportIncomingCall] report new call: \(sessionId)")
+            provider.reportNewIncomingCall(with: sessionId, update: update) { error in
                 completion?(error)
                 if(error == nil){
                     self.configureAudioSession()
                     
-                    self.currentCallData["session_id"] = uuid
-                    self.currentCallData["call_type"] = callType
-                    self.currentCallData["caller_id"] = callInitiatorId
-                    self.currentCallData["caller_name"] = callInitiatorName
-                    self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
-                    self.currentCallData["user_info"] = userInfo
+                    self.currentCallData["session_id"] = sessionId
+                    self.currentCallData["call_di"] = callId
+                    self.currentCallData["caller_name"] = callerName
                     
-                    self.callStates[uuid] = .pending
-                    self.callsData[uuid] = self.currentCallData
+                    
+                    self.callStates[sessionId] = .pending
+                    self.callsData[sessionId] = self.currentCallData
                 }
             }
-        } else if (self.currentCallData["session_id"] as! String == uuid) {
-            print("[CallKitController][reportIncomingCall] update existing call: \(uuid)")
-            provider.reportCall(with: UUID(uuidString: uuid)!, updated: update)
+        } else if (self.currentCallData["session_id"] as! String == callId) {
+            print("[CallKitController][reportIncomingCall] update existing call: \(callId)")
+            provider.reportCall(with: sessionId, updated: update)
         }
     }
     
@@ -140,8 +131,8 @@ class CallKitController : NSObject {
         }
     }
     
-    func reportCallEnded(uuid : UUID, reason: CallEndedReason){
-        print("CallKitController: report call ended: \(uuid)")
+    func reportCallEnded(sessionId : UUID, reason: CallEndedReason){
+        print("CallKitController: report call ended: \(sessionId)")
         var cxReason : CXCallEndedReason
         switch reason {
         case .unanswered:
@@ -151,24 +142,24 @@ class CallKitController : NSObject {
         default:
             cxReason = CXCallEndedReason.failed
         }
-        self.callStates[uuid.uuidString.lowercased()] = .rejected
-        self.provider.reportCall(with: uuid, endedAt: Date.init(), reason: cxReason)
+        self.callStates[sessionId] = .rejected
+        self.provider.reportCall(with: sessionId, endedAt: Date.init(), reason: cxReason)
     }
     
-    func getCallState(uuid: String) -> CallState {
-        print("CallKitController: getCallState: \(self.callStates[uuid.lowercased()] ?? .unknown)")
-        return self.callStates[uuid.lowercased()] ?? .unknown
+    func getCallState(sessionId: UUID) -> CallState {
+        print("CallKitController: getCallState: \(self.callStates[sessionId] ?? .unknown)")
+        return self.callStates[sessionId] ?? .unknown
     }
     
-    func setCallState(uuid: String, callState: String){
-        self.callStates[uuid.lowercased()] = CallState(rawValue: callState)
+    func setCallState(sessionId: UUID, callState: String){
+        self.callStates[sessionId] = CallState(rawValue: callState)
     }
     
-    func getCallData(uuid: String) -> [String: Any]{
-        return self.callsData[uuid.lowercased()] ?? [:]
+    func getCallData(sessionId: UUID) -> [String: Any]{
+        return self.callsData[sessionId] ?? [:]
     }
     
-    func clearCallData(uuid: String){
+    func clearCallData(){
         self.callStates.removeAll()
         self.callsData.removeAll()
     }
@@ -191,12 +182,12 @@ class CallKitController : NSObject {
 //MARK: user actions
 extension CallKitController {
     
-    func end(uuid: UUID) {
+    func end(sessionId: UUID) {
         print("CallKitController: user requested end call")
-        let endCallAction = CXEndCallAction(call: uuid)
+        let endCallAction = CXEndCallAction(call: sessionId)
         let transaction = CXTransaction(action: endCallAction)
         
-        self.callStates[uuid.uuidString.lowercased()] = .rejected
+        self.callStates[sessionId] = .rejected
         requestTransaction(transaction)
     }
     
@@ -228,27 +219,25 @@ extension CallKitController {
         requestTransaction(transaction)
     }
     
-    func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
-        print("CallKitController: user requested start call handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "")")
+    func startCall(handle: String, videoEnabled: Bool, sessionId: UUID) {
+        print("CallKitController: user requested start call handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(sessionId)")
         let handle = CXHandle(type: .generic, value: handle)
-        let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!)
-        let startCallAction = CXStartCallAction(call: callUUID!, handle: handle)
+        let startCallAction = CXStartCallAction(call: sessionId, handle: handle)
         startCallAction.isVideo = videoEnabled
         
         let transaction = CXTransaction(action: startCallAction)
         
-        self.callStates[uuid!.lowercased()] = .accepted
+        self.callStates[sessionId] = .accepted
         
         requestTransaction(transaction);
     }
     
-    func answerCall(uuid: String) {
-        print("CallKitController: user requested answer call, uuid: \(uuid)")
-        let callUUID = UUID(uuidString: uuid)
-        let answerCallAction = CXAnswerCallAction(call: callUUID!)
+    func answerCall(sessionId: UUID) {
+        print("CallKitController: user requested answer call, uuid: \(sessionId)")
+        let answerCallAction = CXAnswerCallAction(call: sessionId)
         let transaction = CXTransaction(action: answerCallAction)
         
-        self.callStates[uuid.lowercased()] = .accepted
+        self.callStates[sessionId] = .accepted
         
         requestTransaction(transaction);
     }
@@ -261,9 +250,9 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-        print("CallKitController: Answer Call \(action.callUUID.uuidString)")
+        print("CallKitController: Answer Call \(action.callUUID)")
         actionListener?(.answerCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        self.callStates[action.callUUID] = .accepted
         action.fulfill()
     }
     
@@ -279,7 +268,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("CallKitController: End Call")
         actionListener?(.endCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString.lowercased()] = .rejected
+        self.callStates[action.callUUID] = .rejected
         action.fulfill()
     }
     
@@ -303,7 +292,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("CallKitController: Start Call")
         actionListener?(.startCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        self.callStates[action.callUUID] = .accepted
         action.fulfill()
     }
 }
