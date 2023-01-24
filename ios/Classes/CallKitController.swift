@@ -219,19 +219,6 @@ extension CallKitController {
         requestTransaction(transaction)
     }
     
-    func startCall(handle: String, videoEnabled: Bool, sessionId: UUID) {
-        print("CallKitController: user requested start call handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(sessionId)")
-        let handle = CXHandle(type: .generic, value: handle)
-        let startCallAction = CXStartCallAction(call: sessionId, handle: handle)
-        startCallAction.isVideo = videoEnabled
-        
-        let transaction = CXTransaction(action: startCallAction)
-        
-        self.callStates[sessionId] = .accepted
-        
-        requestTransaction(transaction);
-    }
-    
     func answerCall(sessionId: UUID) {
         print("CallKitController: user requested answer call, uuid: \(sessionId)")
         let answerCallAction = CXAnswerCallAction(call: sessionId)
