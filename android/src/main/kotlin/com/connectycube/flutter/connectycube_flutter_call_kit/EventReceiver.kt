@@ -98,10 +98,7 @@ class EventReceiver : BroadcastReceiver() {
             ACTION_CALL_NOTIFICATION_CANCELED -> {
                 val extras = intent.extras
                 val callId = extras?.getString(EXTRA_CALL_ID)
-                val callType = extras?.getInt(EXTRA_CALL_TYPE)
-                val callInitiatorId = extras?.getInt(EXTRA_CALL_INITIATOR_ID)
-                val callInitiatorName = extras?.getString(EXTRA_CALL_INITIATOR_NAME)
-                val userInfo = extras?.getString(EXTRA_CALL_USER_INFO)
+
                 Log.i(
                     TAG,
                     "NotificationReceiver onReceive Delete Call Notification, callId: $callId"
