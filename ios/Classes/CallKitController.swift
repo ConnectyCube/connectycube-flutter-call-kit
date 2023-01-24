@@ -108,7 +108,7 @@ class CallKitController : NSObject {
                     self.configureAudioSession()
                     
                     self.currentCallData["session_id"] = sessionId
-                    self.currentCallData["call_di"] = callId
+                    self.currentCallData["call_id"] = callId
                     self.currentCallData["caller_name"] = callerName
                     
                     
