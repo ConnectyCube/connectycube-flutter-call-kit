@@ -53,8 +53,8 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     
     ///useful for integrating with VIOP notifications
     static public func reportIncomingCall(uuid: String,
-                                          callType: Int,
-                                          callInitiatorId: Int,
+                                          callType: String,
+                                          callInitiatorId: String,
                                           callInitiatorName: String,
                                           opponents: [Int],
                                           userInfo: String?, result: FlutterResult?){
@@ -89,8 +89,8 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                 return
             }
             let callId = arguments["session_id"] as! String
-            let callType = arguments["call_type"] as! Int
-            let callInitiatorId = arguments["caller_id"] as! Int
+            let callType = arguments["call_type"] as! String
+            let callInitiatorId = arguments["caller_id"] as! String
             let callInitiatorName = arguments["caller_name"] as! String
             let callOpponentsString = arguments["call_opponents"] as! String
             let callOpponents = callOpponentsString.components(separatedBy: ",")

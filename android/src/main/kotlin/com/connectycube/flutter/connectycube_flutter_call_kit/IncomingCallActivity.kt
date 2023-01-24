@@ -18,7 +18,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
 fun createStartIncomingScreenIntent(
-    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    context: Context, callId: String, callType: String, callInitiatorId: String,
     callInitiatorName: String, opponents: ArrayList<Int>, userInfo: String
 ): Intent {
     val intent = Intent(context, IncomingCallActivity::class.java)
@@ -37,8 +37,8 @@ class IncomingCallActivity : Activity() {
     private lateinit var localBroadcastManager: LocalBroadcastManager
 
     private var callId: String? = null
-    private var callType = -1
-    private var callInitiatorId = -1
+    private var callType = "-1"
+    private var callInitiatorId = "-1"
     private var callInitiatorName: String? = null
     private var callOpponents: ArrayList<Int>? = ArrayList()
     private var callUserInfo: String? = null
@@ -112,8 +112,8 @@ class IncomingCallActivity : Activity() {
 
     private fun processIncomingData(intent: Intent) {
         callId = intent.getStringExtra(EXTRA_CALL_ID)
-        callType = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
-        callInitiatorId = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
+        callType = intent.getStringExtra(EXTRA_CALL_TYPE) ?: "-1"
+        callInitiatorId = intent.getStringExtra(EXTRA_CALL_INITIATOR_ID) ?: "-1"
         callInitiatorName = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         callOpponents = intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)
         callUserInfo = intent.getStringExtra(EXTRA_CALL_USER_INFO)
@@ -126,17 +126,20 @@ class IncomingCallActivity : Activity() {
         val callSubTitleTxt: TextView =
             findViewById(resources.getIdentifier("call_type_txt", "id", packageName))
         callSubTitleTxt.text =
-            String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
+            String.format(CALL_TYPE_PLACEHOLDER, if (callType == "1") "Video" else "Audio")
         val avatarImg: ImageView =
             findViewById(resources.getIdentifier("avatar_img", "id", packageName))
 
-        val defaultImgResId = resources.getIdentifier("connectycube_place_holder", "drawable", packageName)
-        val customAvatarResName = com.connectycube.flutter.connectycube_flutter_call_kit.utils.getString(this, "icon")
-        if (TextUtils.isEmpty(customAvatarResName)){
+        val defaultImgResId =
+            resources.getIdentifier("connectycube_place_holder", "drawable", packageName)
+        val customAvatarResName =
+            com.connectycube.flutter.connectycube_flutter_call_kit.utils.getString(this, "icon")
+        if (TextUtils.isEmpty(customAvatarResName)) {
             avatarImg.setImageResource(defaultImgResId)
         } else {
-            val imgResourceId = resources.getIdentifier(customAvatarResName, "drawable", packageName)
-            if (imgResourceId != 0){
+            val imgResourceId =
+                resources.getIdentifier(customAvatarResName, "drawable", packageName)
+            if (imgResourceId != 0) {
                 avatarImg.setImageResource(imgResourceId)
             } else {
                 avatarImg.setImageResource(defaultImgResId)
@@ -148,8 +151,8 @@ class IncomingCallActivity : Activity() {
     fun onEndCall(view: View?) {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
-        bundle.putInt(EXTRA_CALL_TYPE, callType)
-        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        bundle.putString(EXTRA_CALL_TYPE, callType)
+        bundle.putString(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
         bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
         bundle.putString(EXTRA_CALL_USER_INFO, callUserInfo)
@@ -164,8 +167,8 @@ class IncomingCallActivity : Activity() {
     fun onStartCall(view: View?) {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
-        bundle.putInt(EXTRA_CALL_TYPE, callType)
-        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        bundle.putString(EXTRA_CALL_TYPE, callType)
+        bundle.putString(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
         bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
         bundle.putString(EXTRA_CALL_USER_INFO, callUserInfo)

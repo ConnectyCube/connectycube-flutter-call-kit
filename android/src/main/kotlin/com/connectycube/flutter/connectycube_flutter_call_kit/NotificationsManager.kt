@@ -29,7 +29,7 @@ fun cancelCallNotification(context: Context, callId: String) {
 }
 
 fun showCallNotification(
-    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    context: Context, callId: String, callType: String, callInitiatorId: String,
     callInitiatorName: String, callOpponents: ArrayList<Int>, userInfo: String
 ) {
     val notificationManager = NotificationManagerCompat.from(context)
@@ -44,7 +44,7 @@ fun showCallNotification(
 
     )
 
-    var ringtone: Uri
+    val ringtone: Uri
 
     val customRingtone = getString(context, "ringtone")
     Log.d("NotificationsManager", "customRingtone $customRingtone")
@@ -58,7 +58,7 @@ fun showCallNotification(
     Log.d("NotificationsManager", "ringtone 2 $ringtone")
 
     val callTypeTitle =
-        String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
+        String.format(CALL_TYPE_PLACEHOLDER, if (callType == "1") "Video" else "Audio")
 
     val builder: NotificationCompat.Builder =
         createCallNotification(context, callInitiatorName, callTypeTitle, pendingIntent, ringtone)
@@ -152,16 +152,16 @@ fun addCallRejectAction(
     context: Context,
     notificationBuilder: NotificationCompat.Builder,
     callId: String,
-    callType: Int,
-    callInitiatorId: Int,
+    callType: String,
+    callInitiatorId: String,
     callInitiatorName: String,
     opponents: ArrayList<Int>,
     userInfo: String
 ) {
     val bundle = Bundle()
     bundle.putString(EXTRA_CALL_ID, callId)
-    bundle.putInt(EXTRA_CALL_TYPE, callType)
-    bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+    bundle.putString(EXTRA_CALL_TYPE, callType)
+    bundle.putString(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
     bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
     bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, opponents)
     bundle.putString(EXTRA_CALL_USER_INFO, userInfo)
@@ -192,16 +192,16 @@ fun addCallAcceptAction(
     context: Context,
     notificationBuilder: NotificationCompat.Builder,
     callId: String,
-    callType: Int,
-    callInitiatorId: Int,
+    callType: String,
+    callInitiatorId: String,
     callInitiatorName: String,
     opponents: ArrayList<Int>,
     userInfo: String
 ) {
     val bundle = Bundle()
     bundle.putString(EXTRA_CALL_ID, callId)
-    bundle.putInt(EXTRA_CALL_TYPE, callType)
-    bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+    bundle.putString(EXTRA_CALL_TYPE, callType)
+    bundle.putString(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
     bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
     bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, opponents)
     bundle.putString(EXTRA_CALL_USER_INFO, userInfo)
@@ -227,8 +227,8 @@ fun addCallFullScreenIntent(
     context: Context,
     notificationBuilder: NotificationCompat.Builder,
     callId: String,
-    callType: Int,
-    callInitiatorId: Int,
+    callType: String,
+    callInitiatorId: String,
     callInitiatorName: String,
     callOpponents: ArrayList<Int>,
     userInfo: String
@@ -255,15 +255,15 @@ fun addCancelCallNotificationIntent(
     appContext: Context?,
     notificationBuilder: NotificationCompat.Builder,
     callId: String,
-    callType: Int,
-    callInitiatorId: Int,
+    callType: String,
+    callInitiatorId: String,
     callInitiatorName: String,
     userInfo: String
 ) {
     val bundle = Bundle()
     bundle.putString(EXTRA_CALL_ID, callId)
-    bundle.putInt(EXTRA_CALL_TYPE, callType)
-    bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+    bundle.putString(EXTRA_CALL_TYPE, callType)
+    bundle.putString(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
     bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
     bundle.putString(EXTRA_CALL_USER_INFO, userInfo)
 

@@ -141,8 +141,8 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         return
                     }
 
-                    val callType = arguments["call_type"] as Int
-                    val callInitiatorId = arguments["caller_id"] as Int
+                    val callType = arguments["call_type"] as String
+                    val callInitiatorId = arguments["caller_id"] as String
                     val callInitiatorName = arguments["caller_name"] as String
                     val callOpponents = ArrayList((arguments["call_opponents"] as String)
                         .split(',')

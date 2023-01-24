@@ -55,8 +55,8 @@ extension VoIPController: PKPushRegistryDelegate {
         
         if type == .voIP{
             let callId = callData["session_id"] as! String
-            let callType = callData["call_type"] as! Int
-            let callInitiatorId = callData["caller_id"] as! Int
+            let callType = callData["call_type"] as! String
+            let callInitiatorId = callData["caller_id"] as! String
             let callInitiatorName = callData["caller_name"] as! String
             let callOpponentsString = callData["call_opponents"] as! String
             let callOpponents = callOpponentsString.components(separatedBy: ",")

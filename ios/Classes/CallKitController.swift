@@ -90,8 +90,8 @@ class CallKitController : NSObject {
     
     func reportIncomingCall(
         uuid: String,
-        callType: Int,
-        callInitiatorId: Int,
+        callType: String,
+        callInitiatorId: String,
         callInitiatorName: String,
         opponents: [Int],
         userInfo: String?,
@@ -101,7 +101,7 @@ class CallKitController : NSObject {
         let update = CXCallUpdate()
         update.localizedCallerName = callInitiatorName
         update.remoteHandle = CXHandle(type: .generic, value: uuid)
-        update.hasVideo = callType == 1
+        update.hasVideo = callType == "1"
         update.supportsGrouping = false
         update.supportsUngrouping = false
         update.supportsHolding = false

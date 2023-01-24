@@ -64,8 +64,8 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
             return
         }
 
-        val callType = data["call_type"]?.toInt()
-        val callInitiatorId = data["caller_id"]?.toInt()
+        val callType = data["call_type"]
+        val callInitiatorId = data["caller_id"]
         val callInitiatorName = data["caller_name"]
         val callOpponentsString = data["call_opponents"]
         var callOpponents = ArrayList<Int>()

@@ -18,8 +18,8 @@ class CallEvent {
   });
 
   final String sessionId;
-  final int callType;
-  final int callerId;
+  final String callType;
+  final String callerId;
   final String callerName;
   final Set<int> opponentsIds;
 
@@ -31,8 +31,8 @@ class CallEvent {
 
   CallEvent copyWith({
     String? sessionId,
-    int? callType,
-    int? callerId,
+    String? callType,
+    String? callerId,
     String? callerName,
     Set<int>? opponentsIds,
     Map<String, String>? userInfo,
@@ -62,8 +62,8 @@ class CallEvent {
     print('[CallEvent.fromMap] map: $map');
     return CallEvent(
       sessionId: map['session_id'] as String,
-      callType: int.parse(map['call_type'].toString()),
-      callerId: int.parse(map['caller_id'].toString()),
+      callType: map['call_type'] as String,
+      callerId: map['caller_id'] as String,
       callerName: map['caller_name'] as String,
       opponentsIds:
           (map['call_opponents'] as String).split(',').map(int.parse).toSet(),
