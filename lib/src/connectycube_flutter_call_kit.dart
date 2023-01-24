@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:universal_io/io.dart';
 
 import 'call_event.dart';
@@ -36,8 +33,6 @@ class ConnectycubeFlutterCallKit {
     return _instance!;
   }
 
-  static int _bgHandler = -1;
-
   static Function(String newToken)? onTokenRefreshed;
 
   /// iOS only callbacks
@@ -45,84 +40,36 @@ class ConnectycubeFlutterCallKit {
 
   /// end iOS only callbacks
 
-  static CallEventHandler? _onCallRejectedWhenTerminated;
-  static CallEventHandler? _onCallAcceptedWhenTerminated;
-
   static CallEventHandler? _onCallAccepted;
   static CallEventHandler? _onCallRejected;
 
   /// Initialize the plugin and provided user callbacks.
   ///
-  /// - This function should only be called once at the beginning of
+  /// ⚠️ This function should only be called once at the beginning of
   /// your application.
-  void init(
-      {CallEventHandler? onCallAccepted,
-      CallEventHandler? onCallRejected,
-      String? ringtone,
-      String? icon,
-      String? notificationIcon,
-      String? color}) {
+  /// [ringtone] - the name of the ringtone source (for Anfroid it should be placed by path 'res/raw', for iOS it is a name of ringtone)
+  /// [icon] - the name of image in the `drawable` folder for Android and the name of Assests set for iOS
+  /// [notificationIcon] - the name of the image in the `drawable` folder, uses as Notification Small Icon for Android, ignored for iOS
+  /// [color] - the color in the format '#RRGGBB', uses as an Android Notification accent color, ignored for iOS
+  void init({
+    required CallEventHandler onCallAccepted,
+    required CallEventHandler onCallRejected,
+    String? ringtone,
+    String? icon,
+    String? notificationIcon,
+    String? color,
+  }) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
 
-    updateConfig(
-        ringtone: ringtone,
-        icon: icon,
-        notificationIcon: notificationIcon,
-        color: color);
+    _methodChannel.invokeMethod('updateConfig', {
+      'ringtone': ringtone,
+      'icon': icon,
+      'notification_icon': notificationIcon,
+      'color': color,
+    });
 
     initEventsHandler();
-  }
-
-  /// Set a reject call handler function which is called when the app is in the
-  /// background or terminated.
-  ///
-  /// This provided handler must be a top-level function and cannot be
-  /// anonymous otherwise an [ArgumentError] will be thrown.
-  static set onCallRejectedWhenTerminated(CallEventHandler? handler) {
-    _onCallRejectedWhenTerminated = handler;
-
-    if (handler != null) {
-      instance._registerBackgroundCallEventHandler(
-          handler, BackgroundCallbackName.REJECTED_IN_BACKGROUND);
-    }
-  }
-
-  /// Set a accept call handler function which is called when the app is in the
-  /// background or terminated.
-  ///
-  /// This provided handler must be a top-level function and cannot be
-  /// anonymous otherwise an [ArgumentError] will be thrown.
-  static set onCallAcceptedWhenTerminated(CallEventHandler? handler) {
-    _onCallAcceptedWhenTerminated = handler;
-
-    if (handler != null) {
-      instance._registerBackgroundCallEventHandler(
-          handler, BackgroundCallbackName.ACCEPTED_IN_BACKGROUND);
-    }
-  }
-
-  Future<void> _registerBackgroundCallEventHandler(
-      CallEventHandler handler, String callbackName) async {
-    if (!Platform.isAndroid) {
-      return;
-    }
-
-    if (_bgHandler == -1) {
-      final CallbackHandle bgHandle = PluginUtilities.getCallbackHandle(
-          _backgroundEventsCallbackDispatcher)!;
-
-      _bgHandler = bgHandle.toRawHandle();
-    }
-
-    final CallbackHandle userHandle =
-        PluginUtilities.getCallbackHandle(handler)!;
-
-    await _methodChannel.invokeMapMethod('startBackgroundIsolate', {
-      'pluginCallbackHandle': _bgHandler,
-      'userCallbackHandleName': callbackName,
-      'userCallbackHandle': userHandle.toRawHandle(),
-    });
   }
 
   static void initEventsHandler() {
@@ -131,24 +78,6 @@ class ConnectycubeFlutterCallKit {
       final eventData = Map<String, dynamic>.from(rawData);
 
       _processEvent(eventData);
-    });
-  }
-
-  /// Sets the additional configs for the Call notification
-  /// [ringtone] - the name of the ringtone source (for Anfroid it should be placed by path 'res/raw', for iOS it is a name of ringtone)
-  /// [icon] - the name of image in the `drawable` folder for Android and the name of Assests set for iOS
-  /// [notificationIcon] - the name of the image in the `drawable` folder, uses as Notification Small Icon for Android, ignored for iOS
-  /// [color] - the color in the format '#RRGGBB', uses as an Android Notification accent color, ignored for iOS
-  Future<void> updateConfig(
-      {String? ringtone,
-      String? icon,
-      String? notificationIcon,
-      String? color}) {
-    return _methodChannel.invokeMethod('updateConfig', {
-      'ringtone': ringtone,
-      'icon': icon,
-      'notification_icon': notificationIcon,
-      'color': color,
     });
   }
 
@@ -278,50 +207,6 @@ class ConnectycubeFlutterCallKit {
         throw Exception("Unrecognized event");
     }
   }
-}
-
-// This is the entrypoint for the background isolate. Since we can only enter
-// an isolate once, we setup a MethodChannel to listen for method invocations
-// from the native portion of the plugin. This allows for the plugin to perform
-// any necessary processing in Dart (e.g., populating a custom object) before
-// invoking the provided callback.
-void _backgroundEventsCallbackDispatcher() {
-  // Initialize state necessary for MethodChannels.
-  WidgetsFlutterBinding.ensureInitialized();
-
-  const MethodChannel _channel = MethodChannel(
-    'connectycube_flutter_call_kit.methodChannel.background',
-  );
-
-  // This is where we handle background events from the native portion of the plugin.
-  _channel.setMethodCallHandler((MethodCall call) async {
-    if (call.method == 'onBackgroundEvent') {
-      final CallbackHandle handle =
-          CallbackHandle.fromRawHandle(call.arguments['userCallbackHandle']);
-
-      // PluginUtilities.getCallbackFromHandle performs a lookup based on the
-      // callback handle and returns a tear-off of the original callback.
-      final callback = PluginUtilities.getCallbackFromHandle(handle)!
-          as Future<void> Function(CallEvent);
-
-      try {
-        Map<String, dynamic> callEventMap =
-            Map<String, dynamic>.from(call.arguments['args']);
-        final CallEvent callEvent = CallEvent.fromMap(callEventMap);
-        await callback(callEvent);
-      } catch (e) {
-        // ignore: avoid_print
-        log('[ConnectycubeFlutterCallKit][_backgroundEventsCallbackDispatcher] An error occurred in your background event handler: $e');
-        // ignore: avoid_print
-      }
-    } else {
-      throw UnimplementedError('${call.method} has not been implemented');
-    }
-  });
-
-  // Once we've finished initializing, let the native portion of the plugin
-  // know that it can start scheduling alarms.
-  _channel.invokeMethod<void>('onBackgroundHandlerInitialized');
 }
 
 class CallState {
