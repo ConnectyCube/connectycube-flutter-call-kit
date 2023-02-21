@@ -1,3 +1,6 @@
+## 2.2.2
+- (iOS) Fix the crash on the `getLastCallId` method calling;
+
 ## 2.2.1
 
 - (Android) Fix receiving the FCM if plugin connected together with `firebase_messaging` plugin;
