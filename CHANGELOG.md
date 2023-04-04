@@ -1,3 +1,6 @@
+## 2.2.3
+- (Android) Fix calling of the `onCallRejectedWhenTerminated` and the `onCallAcceptedWhenTerminated` callbacks in the release build;
+
 ## 2.2.2
 - (iOS) Fix the crash on the `getLastCallId` method calling;
 
