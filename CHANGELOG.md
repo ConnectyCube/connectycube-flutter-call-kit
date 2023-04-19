@@ -1,3 +1,6 @@
+## 2.2.4
+- (iOS) Improve the audio after accepting from the background or killed state;
+
 ## 2.2.3
 - (Android) Fix calling of the `onCallRejectedWhenTerminated` and the `onCallAcceptedWhenTerminated` callbacks in the release build;
 
