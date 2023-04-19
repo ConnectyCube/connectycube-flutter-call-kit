@@ -9,8 +9,6 @@ import Foundation
 import AVFoundation
 import CallKit
 
-
-
 enum CallEvent : String {
     case answerCall = "answerCall"
     case endCall = "endCall"
@@ -107,12 +105,13 @@ class CallKitController : NSObject {
         update.supportsHolding = false
         update.supportsDTMF = false
         
+        configureAudioSession(active: true)
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
             print("[CallKitController][reportIncomingCall] report new call: \(uuid)")
             provider.reportNewIncomingCall(with: UUID(uuidString: uuid)!, update: update) { error in
                 completion?(error)
                 if(error == nil){
-                    self.configureAudioSession()
+                    self.configureAudioSession(active: true)
                     
                     self.currentCallData["session_id"] = uuid
                     self.currentCallData["call_type"] = callType
@@ -173,15 +172,30 @@ class CallKitController : NSObject {
         self.callsData.removeAll()
     }
     
-    func configureAudioSession(){
+    func sendAudioInterruptionNotification(){
+        var userInfo : [AnyHashable : Any] = [:]
+        let intrepEndeRaw = AVAudioSession.InterruptionType.ended.rawValue
+        userInfo[AVAudioSessionInterruptionTypeKey] = intrepEndeRaw
+        userInfo[AVAudioSessionInterruptionOptionKey] = AVAudioSession.InterruptionOptions.shouldResume.rawValue
+        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: self, userInfo: userInfo)
+    }
+    
+    func configureAudioSession(active: Bool){
+        print("CallKitController: [configureAudioSession]")
         let audioSession = AVAudioSession.sharedInstance()
         
         do {
-            try audioSession.setCategory(AVAudioSession.Category.playback, options: AVAudioSession.CategoryOptions.allowBluetooth)
-            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
+            try audioSession.setCategory(
+                AVAudioSession.Category.playAndRecord,
+                options: [
+                    .allowBluetooth,
+                    .allowBluetoothA2DP,
+                    .duckOthers,
+                ])
+            try audioSession.setMode(AVAudioSession.Mode.videoChat)
             try audioSession.setPreferredSampleRate(44100.0)
             try audioSession.setPreferredIOBufferDuration(0.005)
-            try audioSession.setActive(true)
+            try audioSession.setActive(active)
         } catch {
             print(error)
         }
@@ -262,14 +276,28 @@ extension CallKitController: CXProviderDelegate {
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("CallKitController: Answer Call \(action.callUUID.uuidString)")
-        actionListener?(.answerCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1200)) {
+            self.configureAudioSession(active: true)
+        }
+        
+        callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        actionListener?(.answerCall, action.callUUID, self.currentCallData)
+        
         action.fulfill()
     }
     
     func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         print("CallKitController: Audio session activated")
-        self.configureAudioSession()
+        
+        if(currentCallData["session_id"] != nil
+           && callStates[currentCallData["session_id"] as! String] == .accepted){
+            sendAudioInterruptionNotification()
+            return
+        }
+        
+        sendAudioInterruptionNotification()
+        configureAudioSession(active: true)
     }
     
     func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
@@ -279,7 +307,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("CallKitController: End Call")
         actionListener?(.endCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString.lowercased()] = .rejected
+        callStates[action.callUUID.uuidString.lowercased()] = .rejected
         action.fulfill()
     }
     
@@ -303,9 +331,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("CallKitController: Start Call")
         actionListener?(.startCall, action.callUUID, currentCallData)
-        self.callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        callStates[action.callUUID.uuidString.lowercased()] = .accepted
         action.fulfill()
     }
 }
-
-
