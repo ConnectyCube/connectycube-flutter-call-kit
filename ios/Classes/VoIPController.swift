@@ -7,6 +7,7 @@
 
 import Foundation
 import PushKit
+import Contacts
 
 class VoIPController : NSObject{
     let callKitController: CallKitController
@@ -32,44 +33,89 @@ class VoIPController : NSObject{
 extension VoIPController: PKPushRegistryDelegate {
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
         if pushCredentials.token.count == 0 {
-            print("[VoIPController][pushRegistry] No device token!")
+            // print("[VoIPController][pushRegistry] No device token!")
             return
         }
         
-        print("[VoIPController][pushRegistry] token: \(pushCredentials.token)")
+        // print("[VoIPController][pushRegistry] token: \(pushCredentials.token)")
         
         let deviceToken: String = pushCredentials.token.reduce("", {$0 + String(format: "%02X", $1) })
-        print("[VoIPController][pushRegistry] deviceToken: \(deviceToken)")
+        // print("[VoIPController][pushRegistry] deviceToken: \(deviceToken)")
         
         self.voipToken = deviceToken
         
         if tokenListener != nil {
-            print("[VoIPController][pushRegistry] notify listener")
+            // print("[VoIPController][pushRegistry] notify listener")
             tokenListener!(self.voipToken!)
         }
     }
     
     func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType) {
-        print("[VoIPController][pushRegistry][didReceiveIncomingPushWith] payload: \(payload.dictionaryPayload)")
-        let callData = payload.dictionaryPayload
+        // print("[VoIPController][pushRegistry][didReceiveIncomingPushWith] payload: \(payload.dictionaryPayload)")
         
         if type == .voIP{
-            let callId = callData["session_id"] as! String
-            let callType = callData["call_type"] as! Int
-            let callInitiatorId = callData["caller_id"] as! Int
-            let callInitiatorName = callData["caller_name"] as! String
-            let callOpponentsString = callData["call_opponents"] as! String
-            let callOpponents = callOpponentsString.components(separatedBy: ",")
-                .map { Int($0) ?? 0 }
-            let userInfo = callData["user_info"] as? String
+            let callData = self.parse(payload: payload)
+
+            let callId = callData!["channelName"] as! String
+            let callType = callData!["callType"] as! String == "sip" ? 0 : 1
+            let callInitiatorId = callData!["callerNumber"] as! String
+            let callInitiatorName = self.getContactName(callInitiatorId: callInitiatorId)
             
-            self.callKitController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
+            self.callKitController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, callData: callData!) { (error) in
                 if(error == nil){
-                    print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
+                    // print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
                 } else {
-                    print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
+                    // print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
                 }
             }
         }
+    }
+
+    private func parse(payload: PKPushPayload) -> [String: Any]? {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload.dictionaryPayload, options: .prettyPrinted)
+            let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            let aps = json?["aps"] as? [String: Any]
+            if(aps?["alert"] != nil) {
+                return aps?["alert"] as? [String: Any]
+            }
+
+            return aps
+        } catch let error as NSError {
+            return nil
+        }
+    }
+
+    private func getContactName(callInitiatorId: String) -> String {
+        var contacts = [CNContact]()
+
+        if CNContactStore.authorizationStatus(for: .contacts) == .authorized {
+            let keysToFetch = [CNContactGivenNameKey as CNKeyDescriptor, CNContactPhoneNumbersKey as CNKeyDescriptor]
+            let fetchRequest = CNContactFetchRequest( keysToFetch: keysToFetch)
+            fetchRequest.mutableObjects = false
+            fetchRequest.unifyResults = true
+            do {
+                try CNContactStore().enumerateContacts(with: fetchRequest) { (contact, stop) -> Void in
+                    var value : String?
+                    
+                    for phone in contact.phoneNumbers {
+                        if (phone.value.stringValue.replacingOccurrences(of:" ", with: "").contains(callInitiatorId)){
+                           contacts.append(contact)
+                        }
+                    }
+                }
+            }
+            catch {}
+        }
+
+        func getNameFromContacts(number: String) -> String {
+            var contactName : String?
+            if contacts.count > 0 {
+                contactName = contacts.first?.givenName
+            }
+            return contactName ?? number
+        }
+
+        return getNameFromContacts(number: callInitiatorId)
     }
 }

@@ -4,9 +4,9 @@ import UIKit
 class CallStreamHandler: NSObject, FlutterStreamHandler {
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        print("[CallStreamHandler][onListen]");
+        // print("[CallStreamHandler][onListen]");
         SwiftConnectycubeFlutterCallKitPlugin.callController.actionListener = { event, uuid, args in
-            print("[CallStreamHandler][onListen] actionListener: \(event)")
+            // print("[CallStreamHandler][onListen] actionListener: \(event)")
             var data = ["event" : event.rawValue, "uuid": uuid.uuidString.lowercased()] as [String: Any]
             if args != nil{
                 data["args"] = args!
@@ -15,7 +15,7 @@ class CallStreamHandler: NSObject, FlutterStreamHandler {
         }
         
         SwiftConnectycubeFlutterCallKitPlugin.voipController.tokenListener = { token in
-            print("[CallStreamHandler][onListen] tokenListener: \(token)")
+            // print("[CallStreamHandler][onListen] tokenListener: \(token)")
             let data: [String: Any] = ["event" : "voipToken", "args": ["voipToken" : token]]
             
             events(data)
@@ -25,7 +25,7 @@ class CallStreamHandler: NSObject, FlutterStreamHandler {
     }
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        print("[CallStreamHandler][onCancel]")
+        // print("[CallStreamHandler][onCancel]")
         SwiftConnectycubeFlutterCallKitPlugin.callController.actionListener = nil
         SwiftConnectycubeFlutterCallKitPlugin.voipController.tokenListener = nil
         return nil
@@ -39,7 +39,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     static let voipController = VoIPController(withCallKitController: callController)
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        print("[SwiftConnectycubeFlutterCallKitPlugin][register]")
+        // print("[SwiftConnectycubeFlutterCallKitPlugin][register]")
         //setup method channels
         let methodChannel = FlutterMethodChannel(name: _methodChannelName, binaryMessenger: registrar.messenger())
         
@@ -54,18 +54,17 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     ///useful for integrating with VIOP notifications
     static public func reportIncomingCall(uuid: String,
                                           callType: Int,
-                                          callInitiatorId: Int,
+                                          callInitiatorId: String,
                                           callInitiatorName: String,
-                                          opponents: [Int],
-                                          userInfo: String?, result: FlutterResult?){
-        SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: uuid.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: opponents, userInfo: userInfo) { (error) in
-            print("[SwiftConnectycubeFlutterCallKitPlugin] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
+                                          callData: [String: Any], result: FlutterResult?){
+        SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: uuid.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, callData: callData) { (error) in
+            // print("[SwiftConnectycubeFlutterCallKitPlugin] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
             result?(error == nil)
         }
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        print("[SwiftConnectycubeFlutterCallKitPlugin][handle] method: \(call.method)");
+        // print("[SwiftConnectycubeFlutterCallKitPlugin][handle] method: \(call.method)");
         let arguments = call.arguments as? Dictionary<String, Any>
         if call.method == "getVoipToken" {
             let voipToken = SwiftConnectycubeFlutterCallKitPlugin.voipController.getVoIPToken()
@@ -89,15 +88,27 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             }
             let callId = arguments["session_id"] as! String
             let callType = arguments["call_type"] as! Int
-            let callInitiatorId = arguments["caller_id"] as! Int
+            let callInitiatorId = arguments["caller_id"] as! String
             let callInitiatorName = arguments["caller_name"] as! String
-            let callOpponentsString = arguments["call_opponents"] as! String
-            let callOpponents = callOpponentsString.components(separatedBy: ",")
-                .map { Int($0) ?? 0 }
-            let userInfo = arguments["user_info"] as? String
+            let callData = arguments["call_data"] as! [String: Any]
             
-            SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
-                print("[SwiftConnectycubeFlutterCallKitPlugin][handle] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
+            SwiftConnectycubeFlutterCallKitPlugin.callController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, callData: callData) { (error) in
+                // print("[SwiftConnectycubeFlutterCallKitPlugin][handle] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
+                result(error == nil)
+            }
+        }
+        else if call.method == "startCall" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
+            let callId = arguments["session_id"] as! String
+            let callType = arguments["call_type"] as! Int
+            let callInitiatorId = arguments["caller_id"] as! String
+            let callInitiatorName = arguments["caller_name"] as! String
+            let callData = arguments["call_data"] as! [String: Any]
+
+            SwiftConnectycubeFlutterCallKitPlugin.callController.newOutgoingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, callData: callData) { (error) in 
                 result(error == nil)
             }
         }

@@ -13,37 +13,33 @@ class CallEvent {
     required this.callType,
     required this.callerId,
     required this.callerName,
-    required this.opponentsIds,
-    this.userInfo,
+    required this.callData,
   });
 
   final String sessionId;
   final int callType;
-  final int callerId;
+  final String callerId;
   final String callerName;
-  final Set<int> opponentsIds;
 
   /// Used for exchanging additional data between the Call notification and your app,
   /// you will get this data in event callbacks (e.g. onCallAcceptedWhenTerminated,
   /// onCallAccepted, onCallRejectedWhenTerminated, or onCallRejected)
   /// after setting it in method showCallNotification
-  final Map<String, String>? userInfo;
+  final Map<String, dynamic>? callData;
 
   CallEvent copyWith({
     String? sessionId,
     int? callType,
-    int? callerId,
+    String? callerId,
     String? callerName,
-    Set<int>? opponentsIds,
-    Map<String, String>? userInfo,
+    Map<String, String>? callData,
   }) {
     return CallEvent(
       sessionId: sessionId ?? this.sessionId,
       callType: callType ?? this.callType,
       callerId: callerId ?? this.callerId,
       callerName: callerName ?? this.callerName,
-      opponentsIds: opponentsIds ?? this.opponentsIds,
-      userInfo: userInfo ?? this.userInfo,
+      callData: callData ?? this.callData,
     );
   }
 
@@ -53,35 +49,28 @@ class CallEvent {
       'call_type': callType,
       'caller_id': callerId,
       'caller_name': callerName,
-      'call_opponents': opponentsIds.join(','),
-      'user_info': jsonEncode(userInfo ?? <String, String>{}),
+      'call_data': callData ?? <String, dynamic>{},
     };
   }
 
   factory CallEvent.fromMap(Map<String, dynamic> map) {
-    print('[CallEvent.fromMap] map: $map');
+    // print('[CallEvent.fromMap] map: $map');
     return CallEvent(
       sessionId: map['session_id'] as String,
       callType: map['call_type'] as int,
-      callerId: map['caller_id'] as int,
+      callerId: map['caller_id'] as String,
       callerName: map['caller_name'] as String,
-      opponentsIds:
-      (map['call_opponents'] as String).split(',').map(int.parse).toSet(),
-      userInfo: map['user_info'] != null
-          ? Map<String, String>.from(jsonDecode(map['user_info']))
-          : null,
+      callData: map['call_data'] != null ? Map<String, dynamic>.from(map['call_data']) : null,
     );
 
     // userInfo: map['user_info'] == null || map['user_info'].isEmpty
     //     ? null
     //     : Map<String, String>.from(jsonDecode(map['user_info'])),
-
   }
 
   String toJson() => json.encode(toMap());
 
-  factory CallEvent.fromJson(String source) =>
-      CallEvent.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory CallEvent.fromJson(String source) => CallEvent.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -90,8 +79,7 @@ class CallEvent {
         'callType: $callType, '
         'callerId: $callerId, '
         'callerName: $callerName, '
-        'opponentsIds: $opponentsIds, '
-        'userInfo: $userInfo)';
+        'callData: $callData)';
   }
 
   @override
@@ -103,17 +91,11 @@ class CallEvent {
         other.callType == callType &&
         other.callerId == callerId &&
         other.callerName == callerName &&
-        setEquals(other.opponentsIds, opponentsIds) &&
-        mapEquals(other.userInfo, userInfo);
+        mapEquals(other.callData, callData);
   }
 
   @override
   int get hashCode {
-    return sessionId.hashCode ^
-    callType.hashCode ^
-    callerId.hashCode ^
-    callerName.hashCode ^
-    opponentsIds.hashCode ^
-    userInfo.hashCode;
+    return sessionId.hashCode ^ callType.hashCode ^ callerId.hashCode ^ callerName.hashCode ^ callData.hashCode;
   }
 }
