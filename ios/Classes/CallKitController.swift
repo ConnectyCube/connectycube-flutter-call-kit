@@ -204,7 +204,7 @@ class CallKitController : NSObject {
     }
     
     func configureAudioSession(active: Bool){
-        // print("CallKitController: [configureAudioSession]")
+        print("CallKitController: [configureAudioSession]")
         let audioSession = AVAudioSession.sharedInstance()
         
         do {
