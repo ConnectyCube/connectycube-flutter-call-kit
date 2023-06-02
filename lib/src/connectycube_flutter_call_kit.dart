@@ -245,6 +245,17 @@ class ConnectycubeFlutterCallKit {
     });
   }
 
+  /// Report that the current active call has been ended by your application
+  static Future<void> reportCallMuted(
+      {required String? sessionId, required bool? muted}) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod("muteCall", {
+      'session_id': sessionId,
+      'muted': muted,
+    });
+  }
+
   static void _processEvent(Map<String, dynamic> eventData) {
     log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
 
