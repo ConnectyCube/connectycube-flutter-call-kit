@@ -292,6 +292,10 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                 }
             }
 
+            "muteCall" -> {
+                    result.success(null)
+            }
+
             else ->
                 result.notImplemented()
 

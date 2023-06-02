@@ -38,7 +38,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     static let callController = CallKitController()
     static let voipController = VoIPController(withCallKitController: callController)
     
-    public static func register(with registrar: FlutterPluginRegistrar) {
+    @objc public static func register(with registrar: FlutterPluginRegistrar) {
         print("[SwiftConnectycubeFlutterCallKitPlugin][register]")
         //setup method channels
         let methodChannel = FlutterMethodChannel(name: _methodChannelName, binaryMessenger: registrar.messenger())
@@ -52,7 +52,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     }
     
     ///useful for integrating with VIOP notifications
-    static public func reportIncomingCall(uuid: String,
+    @objc static public func reportIncomingCall(uuid: String,
                                           callType: Int,
                                           callInitiatorId: Int,
                                           callInitiatorName: String,
@@ -181,6 +181,17 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
         }
         else if call.method == "getLastCallId" {
             result(SwiftConnectycubeFlutterCallKitPlugin.callController.currentCallData["session_id"])
+        }
+        else if call.method == "muteCall" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
+            let callId = arguments["session_id"] as! String
+            let muted = arguments["muted"] as! Bool
+            
+            SwiftConnectycubeFlutterCallKitPlugin.callController.setMute(uuid: UUID(uuidString: callId)!, muted: muted)
+            result(true)
         }
         else {
             result(FlutterMethodNotImplemented)

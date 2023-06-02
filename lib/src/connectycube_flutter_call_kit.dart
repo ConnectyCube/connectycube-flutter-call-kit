@@ -144,6 +144,8 @@ class ConnectycubeFlutterCallKit {
       String? icon,
       String? notificationIcon,
       String? color}) {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
     return _methodChannel.invokeMethod('updateConfig', {
       'ringtone': ringtone,
       'icon': icon,
@@ -155,6 +157,8 @@ class ConnectycubeFlutterCallKit {
   /// Returns VoIP token for iOS plaform.
   /// Returns FCM token for Android platform
   static Future<String?> getToken() {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value(null);
+
     return _methodChannel.invokeMethod('getVoipToken', {}).then((result) {
       return result?.toString();
     });
@@ -162,6 +166,8 @@ class ConnectycubeFlutterCallKit {
 
   /// Show incoming call notification
   static Future<void> showCallNotification(CallEvent callEvent) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
     return _methodChannel.invokeMethod(
         "showCallNotification", callEvent.toMap());
   }
@@ -169,6 +175,8 @@ class ConnectycubeFlutterCallKit {
   /// Report that the current active call has been accepted by your application
   ///
   static Future<void> reportCallAccepted({required String? sessionId}) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
     return _methodChannel
         .invokeMethod("reportCallAccepted", {'session_id': sessionId});
   }
@@ -177,6 +185,8 @@ class ConnectycubeFlutterCallKit {
   static Future<void> reportCallEnded({
     required String? sessionId,
   }) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
     return _methodChannel.invokeMethod("reportCallEnded", {
       'session_id': sessionId,
     });
@@ -184,10 +194,13 @@ class ConnectycubeFlutterCallKit {
 
   /// Get the current call state
   ///
-  /// Other platforms than Android and iOS will receive [CallState.unknown]
+  /// Other platforms than Android and iOS will receive [CallState.UNKNOWN]
   static Future<String> getCallState({
     required String? sessionId,
   }) async {
+    if (!Platform.isAndroid && !Platform.isIOS)
+      return Future.value(CallState.UNKNOWN);
+
     return _methodChannel.invokeMethod("getCallState", {
       'session_id': sessionId,
     }).then((state) {
@@ -200,6 +213,8 @@ class ConnectycubeFlutterCallKit {
     required String? sessionId,
     required String? callState,
   }) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
     return _methodChannel.invokeMethod("setCallState", {
       'session_id': sessionId,
       'call_state': callState,
@@ -210,6 +225,8 @@ class ConnectycubeFlutterCallKit {
   static Future<Map<String, dynamic>?> getCallData({
     required String? sessionId,
   }) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value(null);
+
     return _methodChannel.invokeMethod("getCallData", {
       'session_id': sessionId,
     }).then((data) {
@@ -224,6 +241,8 @@ class ConnectycubeFlutterCallKit {
   static Future<void> clearCallData({
     required String? sessionId,
   }) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
     return _methodChannel.invokeMethod("clearCallData", {
       'session_id': sessionId,
     });
@@ -232,6 +251,8 @@ class ConnectycubeFlutterCallKit {
   /// Returns the id of the last displayed call.
   /// It is useful on starting app step for navigation to the call screen if the call was accepted
   static Future<String?> getLastCallId() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value(null);
+
     return _methodChannel.invokeMethod("getLastCallId");
   }
 
@@ -242,6 +263,17 @@ class ConnectycubeFlutterCallKit {
 
     return _methodChannel.invokeMethod("setOnLockScreenVisibility", {
       'is_visible': isVisible,
+    });
+  }
+
+  /// Report that the current active call has been ended by your application
+  static Future<void> reportCallMuted(
+      {required String? sessionId, required bool? muted}) async {
+    if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod("muteCall", {
+      'session_id': sessionId,
+      'muted': muted,
     });
   }
 
