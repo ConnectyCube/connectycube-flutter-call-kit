@@ -131,7 +131,21 @@ ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerm
 ```
 
 !> Attention: the functions `onCallRejectedWhenTerminated` and `onCallAcceptedWhenTerminated` must 
-be a top-level function and cannot be anonymous
+be a top-level functions and cannot be anonymous. Mark these callbacks with the `@pragma('vm:entry-point')` 
+annotation to allow using them from the native code.
+
+#### Listen for the actions performed on the CallKit screen (iOS only):
+
+##### Listening for the muting/unmuting the call
+
+```dart
+ConnectycubeFlutterCallKit.onCallMuted = onCallMuted;
+
+Future<void> onCallMuted(bool mute, String uuid) async {
+  // [mute] - `true` - the call was muted on the CallKit screen, `false` - the call was unmuted
+  // [uuid] - the id of the muted/unmuted call
+}
+```
 
 ### Get the call state
 
@@ -155,7 +169,7 @@ var sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
 ```
 Then you can get the state of this call using `getCallState`.
 
-### Notify the plugin about processing the call on the Flutter app side
+### Notify the plugin about user actions concerning the call on the Flutter app side
 
 For dismissing the Incoming call screen (or the Call Kit for iOS) you should notify the plugin about 
 these events.
@@ -164,6 +178,13 @@ Use next functions for it:
 ```dart
 ConnectycubeFlutterCallKit.reportCallAccepted(sessionId: uuid);
 ConnectycubeFlutterCallKit.reportCallEnded(sessionId: uuid);
+```
+
+Notifying the plugin about muting/unmuting the call (iOS only):
+```dart
+var muted = true; // set `true` if the call was muted or `false` if the call was unmuted
+
+ConnectycubeFlutterCallKit.reportCallMuted(sessionId: uuid, muted: muted);
 ```
 
 ### Clear call data
