@@ -38,7 +38,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     static let callController = CallKitController()
     static let voipController = VoIPController(withCallKitController: callController)
     
-    public static func register(with registrar: FlutterPluginRegistrar) {
+    @objc public static func register(with registrar: FlutterPluginRegistrar) {
         print("[SwiftConnectycubeFlutterCallKitPlugin][register]")
         //setup method channels
         let methodChannel = FlutterMethodChannel(name: _methodChannelName, binaryMessenger: registrar.messenger())
@@ -52,7 +52,7 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
     }
     
     ///useful for integrating with VIOP notifications
-    static public func reportIncomingCall(uuid: String,
+    @objc static public func reportIncomingCall(uuid: String,
                                           callType: Int,
                                           callInitiatorId: Int,
                                           callInitiatorName: String,

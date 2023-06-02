@@ -18,7 +18,7 @@ class VoIPController : NSObject{
         super.init()
         
         //http://stackoverflow.com/questions/27245808/implement-pushkit-and-test-in-development-behavior/28562124#28562124
-        let pushRegistry = PKPushRegistry(queue: DispatchQueue.main)
+        let pushRegistry = PKPushRegistry(queue: .main)
         pushRegistry.delegate = self
         pushRegistry.desiredPushTypes = Set<PKPushType>([.voIP])
     }
