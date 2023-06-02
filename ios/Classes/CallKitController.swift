@@ -107,7 +107,6 @@ class CallKitController : NSObject {
         update.supportsHolding = false
         update.supportsDTMF = false
         
-        configureAudioSession(active: true)
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
             print("[CallKitController][reportIncomingCall] report new call: \(uuid)")
             
@@ -204,7 +203,6 @@ class CallKitController : NSObject {
                 options: [
                     .allowBluetooth,
                     .allowBluetoothA2DP,
-                    .duckOthers,
                 ])
             try audioSession.setMode(AVAudioSession.Mode.videoChat)
             try audioSession.setPreferredSampleRate(44100.0)
@@ -298,10 +296,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         print("[CallKitController][CXAnswerCallAction] callUUID: \(action.callUUID.uuidString.lowercased())")
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1200)) {
-            self.configureAudioSession(active: true)
-        }
-        
+        configureAudioSession(active: true)
         callStates[action.callUUID.uuidString.lowercased()] = .accepted
         actionListener?(.answerCall, action.callUUID, self.currentCallData)
         
@@ -309,13 +304,7 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
-        print("CallKitController: Audio session activated")
-        
-        if(currentCallData["session_id"] != nil
-           && callStates[currentCallData["session_id"] as! String] == .accepted){
-            sendAudioInterruptionNotification()
-            return
-        }
+        print("[CallKitController] Audio session activated")
         
         sendAudioInterruptionNotification()
         configureAudioSession(active: true)
@@ -359,6 +348,8 @@ extension CallKitController: CXProviderDelegate {
         
         actionListener?(.startCall, action.callUUID, currentCallData)
         callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        configureAudioSession(active: true)
+        
         action.fulfill()
     }
 }
