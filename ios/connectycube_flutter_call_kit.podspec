@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'connectycube_flutter_call_kit'
-  s.version          = '2.2.4'
+  s.version          = '2.3.0'
   s.summary          = 'Connectycube Call Kit plugin for flutter.'
   s.description      = <<-DESC
 Connectycube Call Kit plugin for flutter.

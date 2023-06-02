@@ -1,3 +1,8 @@
+## 2.3.0
+- (iOS) Add a method for notifying the CallKit about muting/unmuting the call;
+- (iOS) Improvements for audio after accepting the call from the background or killed state;
+- (Dart) Add ignoring of not supported platforms;
+
 ## 2.2.4
 - (iOS) Improve the audio after accepting from the background or killed state;
 
