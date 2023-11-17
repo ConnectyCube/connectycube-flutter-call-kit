@@ -147,6 +147,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     val callOpponents = ArrayList((arguments["call_opponents"] as String)
                         .split(',')
                         .map { it.toInt() })
+                    val callPhoto = arguments["photo_url"] as String?
                     val userInfo = arguments["user_info"] as String
 
                     showCallNotification(
@@ -156,6 +157,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         callInitiatorId,
                         callInitiatorName,
                         callOpponents,
+                        callPhoto,
                         userInfo
                     )
 
@@ -293,7 +295,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
             }
 
             "muteCall" -> {
-                    result.success(null)
+                result.success(null)
             }
 
             else ->
@@ -532,6 +534,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         callEventMap["caller_name"] = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         callEventMap["call_opponents"] =
             intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")
+        callEventMap["photo_url"] = intent.getStringExtra(EXTRA_CALL_PHOTO)
         callEventMap["user_info"] = intent.getStringExtra(EXTRA_CALL_USER_INFO)
 
         Log.d("ConnectycubeFlutterCallKitPlugin", "callEventMap: $callEventMap")

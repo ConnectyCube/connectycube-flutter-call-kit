@@ -22,7 +22,8 @@ getting token and displaying the Incoming call screen.
 - some customizations according to your app needs (ringtone, icon, accent color(for Android))
 
 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png" height="440" /></kbd> <kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd> <kbd><img alt="Flutter P2P Calls code sample, incoming call in background iOS" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios.PNG" height="440" /></kbd>
+<kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png" height="440" /></kbd> 
+<kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd> <kbd><img alt="Flutter P2P Calls code sample, incoming call in background iOS" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios.PNG" height="440" /></kbd>
 <kbd><img alt="Flutter P2P Calls code sample, incoming call locked iOS" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios_locked.PNG" height="440" /></kbd>
 
 ## Configure your project
@@ -82,9 +83,28 @@ and notification accent color (Android only). Use the next method for it:
 ```dart
 ConnectycubeFlutterCallKit.instance.updateConfig(
   ringtone: 'custom_ringtone', 
-  icon: 'app_icon', 
-  notificationIcon: 'ic_notification', 
+  icon: Platform.isAndroid ? 'default_avatar' : 'CallKitIcon', // is used as an avatar placeholder for Android and as the app icon for iOS
   color: '#07711e');
+```
+
+#### [Android only] Notification icon customisation
+You can set different icons for Audion and Video calls, add suitable resources to your
+`android/app/src/main/AndroidManifest.xml` to the `application` section for it:
+```xml
+<meta-data
+    android:name="com.connectycube.flutter.connectycube_flutter_call_kit.audio_call_notification_icon"
+    android:resource="@drawable/ic_notification_audio_call" />
+
+<meta-data
+    android:name="com.connectycube.flutter.connectycube_flutter_call_kit.video_call_notification_icon"
+    android:resource="@drawable/ic_notification_video_call" />
+```
+
+If you don't need it, add only the default notification icon:
+```xml
+<meta-data
+    android:name="com.connectycube.flutter.connectycube_flutter_call_kit.app_notification_icon"
+    android:resource="@drawable/ic_notification" />
 ```
 
 ### Show Incoming call notification
@@ -98,6 +118,7 @@ CallEvent callEvent = CallEvent(
     callerId: incomingCall.callerId,
     callerName: 'Caller Name',
     opponentsIds: incomingCall.opponentsIds,
+    callPhoto: 'https://i.imgur.com/KwrDil8b.jpg',
     userInfo: {'customParameter1': 'value1'});
 ConnectycubeFlutterCallKit.showCallNotification(callEvent);
 ```
@@ -221,6 +242,7 @@ params.parameters = {
     'caller_id': currentCall.callerId,
     'caller_name': callerName,
     'call_opponents': currentCall.opponentsIds.join(','),
+    'photo_url': 'https://i.imgur.com/KwrDil8b.jpg'
     'signal_type': 'startCall',
     'ios_voip': 1,
  };

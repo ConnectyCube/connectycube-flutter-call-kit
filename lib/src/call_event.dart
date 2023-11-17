@@ -14,6 +14,7 @@ class CallEvent {
     required this.callerId,
     required this.callerName,
     required this.opponentsIds,
+    this.callPhoto,
     this.userInfo,
   });
 
@@ -22,6 +23,7 @@ class CallEvent {
   final int callerId;
   final String callerName;
   final Set<int> opponentsIds;
+  final String? callPhoto;
 
   /// Used for exchanging additional data between the Call notification and your app,
   /// you will get this data in event callbacks (e.g. onCallAcceptedWhenTerminated,
@@ -35,6 +37,7 @@ class CallEvent {
     int? callerId,
     String? callerName,
     Set<int>? opponentsIds,
+    String? callPhoto,
     Map<String, String>? userInfo,
   }) {
     return CallEvent(
@@ -43,6 +46,7 @@ class CallEvent {
       callerId: callerId ?? this.callerId,
       callerName: callerName ?? this.callerName,
       opponentsIds: opponentsIds ?? this.opponentsIds,
+      callPhoto: callPhoto ?? this.callPhoto,
       userInfo: userInfo ?? this.userInfo,
     );
   }
@@ -54,6 +58,7 @@ class CallEvent {
       'caller_id': callerId,
       'caller_name': callerName,
       'call_opponents': opponentsIds.join(','),
+      'photo_url': callPhoto,
       'user_info': jsonEncode(userInfo ?? <String, String>{}),
     };
   }
@@ -66,16 +71,12 @@ class CallEvent {
       callerId: map['caller_id'] as int,
       callerName: map['caller_name'] as String,
       opponentsIds:
-      (map['call_opponents'] as String).split(',').map(int.parse).toSet(),
+          (map['call_opponents'] as String).split(',').map(int.parse).toSet(),
+      callPhoto: map['photo_url'],
       userInfo: map['user_info'] != null
           ? Map<String, String>.from(jsonDecode(map['user_info']))
           : null,
     );
-
-    // userInfo: map['user_info'] == null || map['user_info'].isEmpty
-    //     ? null
-    //     : Map<String, String>.from(jsonDecode(map['user_info'])),
-
   }
 
   String toJson() => json.encode(toMap());
@@ -91,6 +92,7 @@ class CallEvent {
         'callerId: $callerId, '
         'callerName: $callerName, '
         'opponentsIds: $opponentsIds, '
+        'callPhoto: $callPhoto, '
         'userInfo: $userInfo)';
   }
 
@@ -104,16 +106,17 @@ class CallEvent {
         other.callerId == callerId &&
         other.callerName == callerName &&
         setEquals(other.opponentsIds, opponentsIds) &&
+        other.callPhoto == callPhoto &&
         mapEquals(other.userInfo, userInfo);
   }
 
   @override
   int get hashCode {
     return sessionId.hashCode ^
-    callType.hashCode ^
-    callerId.hashCode ^
-    callerName.hashCode ^
-    opponentsIds.hashCode ^
-    userInfo.hashCode;
+        callType.hashCode ^
+        callerId.hashCode ^
+        callerName.hashCode ^
+        opponentsIds.hashCode ^
+        userInfo.hashCode;
   }
 }
