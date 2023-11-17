@@ -240,6 +240,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
         parameters["caller_name"] = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         parameters["call_opponents"] =
             intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")
+        parameters["photo_url"] = intent.getStringExtra(EXTRA_CALL_PHOTO)
         parameters["user_info"] = intent.getStringExtra(EXTRA_CALL_USER_INFO)
 
 

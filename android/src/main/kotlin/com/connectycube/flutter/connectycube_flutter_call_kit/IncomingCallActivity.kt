@@ -15,11 +15,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.bumptech.glide.Glide
+import com.connectycube.flutter.connectycube_flutter_call_kit.utils.getPhotoPlaceholderResId
+import com.google.android.material.imageview.ShapeableImageView
+import com.skyfishjy.library.RippleBackground
 
 
 fun createStartIncomingScreenIntent(
     context: Context, callId: String, callType: Int, callInitiatorId: Int,
-    callInitiatorName: String, opponents: ArrayList<Int>, userInfo: String
+    callInitiatorName: String, opponents: ArrayList<Int>, callPhoto: String?, userInfo: String
 ): Intent {
     val intent = Intent(context, IncomingCallActivity::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -28,6 +32,7 @@ fun createStartIncomingScreenIntent(
     intent.putExtra(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
     intent.putExtra(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
     intent.putIntegerArrayListExtra(EXTRA_CALL_OPPONENTS, opponents)
+    intent.putExtra(EXTRA_CALL_PHOTO, callPhoto)
     intent.putExtra(EXTRA_CALL_USER_INFO, userInfo)
     return intent
 }
@@ -41,6 +46,7 @@ class IncomingCallActivity : Activity() {
     private var callInitiatorId = -1
     private var callInitiatorName: String? = null
     private var callOpponents: ArrayList<Int>? = ArrayList()
+    private var callPhoto: String? = null
     private var callUserInfo: String? = null
 
 
@@ -57,6 +63,10 @@ class IncomingCallActivity : Activity() {
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
             )
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q){
+            setInheritShowWhenLocked(true)
         }
 
         processIncomingData(intent)
@@ -80,6 +90,7 @@ class IncomingCallActivity : Activity() {
                     ACTION_CALL_NOTIFICATION_CANCELED, ACTION_CALL_REJECT, ACTION_CALL_ENDED -> {
                         finishAndRemoveTask()
                     }
+
                     ACTION_CALL_ACCEPT -> finishDelayed()
                 }
             }
@@ -116,6 +127,7 @@ class IncomingCallActivity : Activity() {
         callInitiatorId = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
         callInitiatorName = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         callOpponents = intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)
+        callPhoto = intent.getStringExtra(EXTRA_CALL_PHOTO)
         callUserInfo = intent.getStringExtra(EXTRA_CALL_USER_INFO)
     }
 
@@ -127,21 +139,40 @@ class IncomingCallActivity : Activity() {
             findViewById(resources.getIdentifier("call_type_txt", "id", packageName))
         callSubTitleTxt.text =
             String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
-        val avatarImg: ImageView =
+
+        val callAcceptButton: ImageView =
+            findViewById(resources.getIdentifier("start_call_btn", "id", packageName))
+        val acceptButtonIconName = if (callType == 1) "ic_video_call_start" else "ic_call_start"
+        callAcceptButton.setImageResource(
+            resources.getIdentifier(
+                acceptButtonIconName,
+                "drawable",
+                packageName
+            )
+        )
+
+        val avatarImg: ShapeableImageView =
             findViewById(resources.getIdentifier("avatar_img", "id", packageName))
 
-        val defaultImgResId = resources.getIdentifier("connectycube_place_holder", "drawable", packageName)
-        val customAvatarResName = com.connectycube.flutter.connectycube_flutter_call_kit.utils.getString(this, "icon")
-        if (TextUtils.isEmpty(customAvatarResName)){
-            avatarImg.setImageResource(defaultImgResId)
+        val defaultPhotoResId = getPhotoPlaceholderResId(applicationContext)
+
+        if (!TextUtils.isEmpty(callPhoto)) {
+            Glide.with(applicationContext)
+                .load(callPhoto)
+                .error(defaultPhotoResId)
+                .placeholder(defaultPhotoResId)
+                .into(avatarImg)
         } else {
-            val imgResourceId = resources.getIdentifier(customAvatarResName, "drawable", packageName)
-            if (imgResourceId != 0){
-                avatarImg.setImageResource(imgResourceId)
-            } else {
-                avatarImg.setImageResource(defaultImgResId)
-            }
+            avatarImg.setImageResource(defaultPhotoResId)
         }
+
+        val acceptButtonAnimation: RippleBackground =
+            findViewById(resources.getIdentifier("accept_button_animation", "id", packageName))
+        acceptButtonAnimation.startRippleAnimation()
+
+        val rejectButtonAnimation: RippleBackground =
+            findViewById(resources.getIdentifier("reject_button_animation", "id", packageName))
+        rejectButtonAnimation.startRippleAnimation()
     }
 
     // calls from layout file
@@ -152,6 +183,7 @@ class IncomingCallActivity : Activity() {
         bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
         bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+        bundle.putString(EXTRA_CALL_PHOTO, callPhoto)
         bundle.putString(EXTRA_CALL_USER_INFO, callUserInfo)
 
         val endCallIntent = Intent(this, EventReceiver::class.java)
@@ -168,6 +200,7 @@ class IncomingCallActivity : Activity() {
         bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
         bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+        bundle.putString(EXTRA_CALL_PHOTO, callPhoto)
         bundle.putString(EXTRA_CALL_USER_INFO, callUserInfo)
 
         val startCallIntent = Intent(this, EventReceiver::class.java)

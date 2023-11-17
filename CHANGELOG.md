@@ -1,3 +1,8 @@
+## 2.4.0
+- (Android) Add the Call photo to the Call notification and the Incoming call screen;
+- (Android) Add different icons to the Accept buttons depending on the call type;
+- (Android) Add the possibility for setting the Notification icon depending on the call type;
+
 ## 2.3.0
 - (iOS) Add a method for notifying the CallKit about muting/unmuting the call;
 - (iOS) Improvements for audio after accepting the call from the background or killed state;
