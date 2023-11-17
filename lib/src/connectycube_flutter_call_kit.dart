@@ -60,6 +60,7 @@ class ConnectycubeFlutterCallKit {
       CallEventHandler? onCallRejected,
       String? ringtone,
       String? icon,
+      @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
       String? color}) {
     _onCallAccepted = onCallAccepted;
@@ -142,6 +143,7 @@ class ConnectycubeFlutterCallKit {
   Future<void> updateConfig(
       {String? ringtone,
       String? icon,
+      @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
       String? color}) {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();

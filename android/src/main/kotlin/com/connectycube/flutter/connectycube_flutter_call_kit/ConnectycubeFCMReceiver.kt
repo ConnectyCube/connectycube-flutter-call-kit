@@ -67,12 +67,12 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
         val callType = data["call_type"]?.toInt()
         val callInitiatorId = data["caller_id"]?.toInt()
         val callInitiatorName = data["caller_name"]
+        val callPhoto = data["photo_url"]
         val callOpponentsString = data["call_opponents"]
         var callOpponents = ArrayList<Int>()
         if (callOpponentsString != null) {
             callOpponents = ArrayList(callOpponentsString.split(',').map { it.toInt() })
         }
-
         val userInfo = data["user_info"] ?: JSONObject(emptyMap<String, String>()).toString()
 
         if (callType == null || callInitiatorId == null || callInitiatorName == null || callOpponents.isEmpty()) {
@@ -86,6 +86,7 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
             callInitiatorId,
             callInitiatorName,
             callOpponents,
+            callPhoto,
             userInfo
         )
 
