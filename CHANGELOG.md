@@ -1,3 +1,6 @@
+## 2.5.0
+- (Android) Add API to manage the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission;
+
 ## 2.4.0
 - (Android) Add the Call photo to the Call notification and the Incoming call screen;
 - (Android) Add different icons to the Accept buttons depending on the call type;

@@ -193,6 +193,12 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             SwiftConnectycubeFlutterCallKitPlugin.callController.setMute(uuid: UUID(uuidString: callId)!, muted: muted)
             result(true)
         }
+        else if call.method == "canUseFullScreenIntent" {
+            result(true)
+        }
+        else if call.method == "provideFullScreenIntentAccess" {
+            result(true)
+        }
         else {
             result(FlutterMethodNotImplemented)
         }
