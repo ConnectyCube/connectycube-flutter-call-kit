@@ -1,14 +1,17 @@
 package com.connectycube.flutter.connectycube_flutter_call_kit
 
 import android.app.Activity
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -55,7 +58,7 @@ class IncomingCallActivity : Activity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(resources.getIdentifier("activity_incoming_call", "layout", packageName))
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         } else {
@@ -65,8 +68,33 @@ class IncomingCallActivity : Activity() {
             )
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             setInheritShowWhenLocked(true)
+        }
+
+        with(getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                requestDismissKeyguard(this@IncomingCallActivity, object :
+                    KeyguardManager.KeyguardDismissCallback() {
+                    override fun onDismissError() {
+                        Log.d("IncomingCallActivity", "[KeyguardDismissCallback.onDismissError]")
+                    }
+
+                    override fun onDismissSucceeded() {
+                        Log.d(
+                            "IncomingCallActivity",
+                            "[KeyguardDismissCallback.onDismissSucceeded]"
+                        )
+                    }
+
+                    override fun onDismissCancelled() {
+                        Log.d(
+                            "IncomingCallActivity",
+                            "[KeyguardDismissCallback.onDismissCancelled]"
+                        )
+                    }
+                })
+            }
         }
 
         processIncomingData(intent)

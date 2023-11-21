@@ -279,6 +279,27 @@ class ConnectycubeFlutterCallKit {
     });
   }
 
+  /// Returns whether the app can send fullscreen intents (required for showing
+  /// the Incoming call screen on the Lockscreen)
+  static Future<bool> canUseFullScreenIntent() async {
+    if (!Platform.isAndroid) return Future.value(true);
+
+    return _methodChannel.invokeMethod("canUseFullScreenIntent").then((result) {
+      if (result == null) {
+        return false;
+      }
+
+      return result;
+    });
+  }
+
+  /// Opens the Setting to grant/deny permission for running the fullscreen Intents
+  static Future<void> provideFullScreenIntentAccess() async {
+    if (!Platform.isAndroid) return Future.value();
+
+    return _methodChannel.invokeMethod("provideFullScreenIntentAccess");
+  }
+
   static void _processEvent(Map<String, dynamic> eventData) {
     log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
 

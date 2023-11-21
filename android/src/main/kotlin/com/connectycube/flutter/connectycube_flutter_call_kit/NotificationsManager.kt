@@ -40,7 +40,13 @@ fun showCallNotification(
     context: Context, callId: String, callType: Int, callInitiatorId: Int,
     callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String
 ) {
+    Log.d("NotificationsManager", "[showCallNotification]")
     val notificationManager = NotificationManagerCompat.from(context)
+
+    Log.d(
+        "NotificationsManager",
+        "[showCallNotification] canUseFullScreenIntent: ${notificationManager.canUseFullScreenIntent()}"
+    )
 
     val intent = getLaunchIntent(context)
 
@@ -55,15 +61,13 @@ fun showCallNotification(
     var ringtone: Uri
 
     val customRingtone = getString(context, "ringtone")
-    Log.d("NotificationsManager", "customRingtone $customRingtone")
     if (!TextUtils.isEmpty(customRingtone)) {
         ringtone = Uri.parse("android.resource://" + context.packageName + "/raw/" + customRingtone)
-        Log.d("NotificationsManager", "ringtone 1 $ringtone")
     } else {
         ringtone = Settings.System.DEFAULT_RINGTONE_URI
     }
 
-    Log.d("NotificationsManager", "ringtone 2 $ringtone")
+    Log.d("NotificationsManager", "ringtone: $ringtone")
 
     val isVideoCall = callType == 1
 
@@ -385,4 +389,8 @@ fun setNotificationColor(context: Context, notificationBuilder: NotificationComp
             }
         }
     }
+}
+
+fun canUseFullScreenIntent(context: Context): Boolean {
+    return NotificationManagerCompat.from(context).canUseFullScreenIntent()
 }

@@ -2,12 +2,15 @@ package com.connectycube.flutter.connectycube_flutter_call_kit
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
 import android.view.WindowManager
@@ -295,6 +298,30 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
             }
 
             "muteCall" -> {
+                result.success(null)
+            }
+
+            "canUseFullScreenIntent" -> {
+                result.success(canUseFullScreenIntent(applicationContext!!))
+            }
+
+            "provideFullScreenIntentAccess" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    try {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                            Uri.parse("package:${applicationContext?.packageName}")
+                        )
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY)
+                        applicationContext?.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        applicationContext?.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE, applicationContext?.packageName)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }
+                } else {
+                    Log.d("ConnectycubeFlutterCallKitPlugin", "Permission request is available from API version 34 (UPSIDE_DOWN_CAKE) and above")
+                }
                 result.success(null)
             }
 
