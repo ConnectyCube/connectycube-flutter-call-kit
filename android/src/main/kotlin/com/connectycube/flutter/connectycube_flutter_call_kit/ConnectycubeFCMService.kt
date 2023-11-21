@@ -11,13 +11,14 @@ class ConnectycubeFCMService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
+        Log.d(TAG, "[onMessageReceived]")
         // Added for commenting purposes;
         // We don't handle the message here as we already handle it in the receiver and don't want to duplicate.
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "onNewToken")
+        Log.d(TAG, "[onNewToken]")
 
         LocalBroadcastManager.getInstance(applicationContext)
             .sendBroadcast(Intent(ACTION_TOKEN_REFRESHED).putExtra(EXTRA_PUSH_TOKEN, token))

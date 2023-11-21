@@ -47,6 +47,8 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
     }
 
     private fun processEndCallEvent(applicationContext: Context, data: Map<String, String>) {
+        Log.d(TAG, "[processEndCallEvent]")
+
         val callId = data["session_id"] ?: return
 
 
@@ -54,6 +56,7 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
     }
 
     private fun processInviteCallEvent(applicationContext: Context, data: Map<String, String>) {
+        Log.d(TAG, "[processInviteCallEvent]")
         val callId = data["session_id"]
 
         if (callId == null || CALL_STATE_UNKNOWN != getCallState(
@@ -61,6 +64,7 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
                 callId
             )
         ) {
+            Log.d(TAG, "[processInviteCallEvent] callId == null || CALL_STATE_UNKNOWN != getCallState(applicationContext, callId)")
             return
         }
 
@@ -76,6 +80,7 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
         val userInfo = data["user_info"] ?: JSONObject(emptyMap<String, String>()).toString()
 
         if (callType == null || callInitiatorId == null || callInitiatorName == null || callOpponents.isEmpty()) {
+            Log.d(TAG, "[processInviteCallEvent] callType == null || callInitiatorId == null || callInitiatorName == null || callOpponents.isEmpty()")
             return
         }
 

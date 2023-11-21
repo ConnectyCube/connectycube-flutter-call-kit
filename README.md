@@ -19,7 +19,8 @@ getting token and displaying the Incoming call screen.
 - notifying the app about user action performed on the Incoming call screen (accept, reject, mute (for iOS))
 - providing the methods for manual managing of the Incoming screen including the manual showing the Incoming call screen
 - getting the data about the current call during the call session
-- some customizations according to your app needs (ringtone, icon, accent color(for Android))
+- some customizations according to your app needs (ringtone, app icon, accent color(for Android))
+- checking and changing the access to the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission (for Android 14 and above)
 
 
 <kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png" height="440" /></kbd> 
@@ -230,6 +231,20 @@ After finishing that call you should hide your app under the lock screen, do it 
 ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: false);
 ```
 
+### Check the permission `Manifest.permission.USE_FULL_SCREEN_INTENT` state (Android 14 and above)
+
+```dart
+var canUseFullScreenIntent = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
+```
+
+### Request the access to the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission (Android 14 and above)
+
+```dart
+ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
+```
+The function moves the user to the specific setting for your app where you can grant or deny this 
+permission for your app.
+
 ## Show Incoming call screen by push notification
 In case you want to display the Incoming call screen automatically by push notification you can do 
 it easily. For it, the caller should send the push notification to all call members. This push notification should contain some required parameters. If you use the [Connectycube Flutter SDK](https://pub.dev/packages/connectycube_sdk), you can do it using the next code:
@@ -261,5 +276,19 @@ createEvent(params.getEventForRequest()).then((cubeEvent) {
 
 For hiding the Incoming call screen via push notification use a similar request but with a 
 different `signal_type`, it can be `'endCall'` or `'rejectCall'`.
+
+## Android 14 features
+Starting from Android `Build.VERSION_CODES.UPSIDE_DOWN_CAKE`, apps may not have permission to use 
+`Manifest.permission.USE_FULL_SCREEN_INTENT`. If permission is denied, the call notification will 
+show up as an expanded heads up notification on lockscreen. The plugin provides the API for checking 
+the access state and moves to the System setting for enabling it. Please follow the next code 
+snippet to manage it:
+```dart
+var canUseFullScreenIntent = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
+
+if (!canUseFullScreenIntent){
+  ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
+}
+```
 
 You can check how this plugin works in our [P2P Calls code sample](https://github.com/ConnectyCube/connectycube-flutter-samples/tree/master/p2p_call_sample).
