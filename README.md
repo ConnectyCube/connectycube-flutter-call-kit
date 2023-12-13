@@ -292,3 +292,14 @@ if (!canUseFullScreenIntent){
 ```
 
 You can check how this plugin works in our [P2P Calls code sample](https://github.com/ConnectyCube/connectycube-flutter-samples/tree/master/p2p_call_sample).
+
+## Have an issue?
+
+Got troubles with integration? Create an issue at [Issues page](https://github.com/ConnectyCube/connectycube-flutter-call-kit/issues).
+
+**Want to support our team**:<br>
+<a href="https://www.buymeacoffee.com/connectycube" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+## License
+
+See [LICENSE](LICENSE)
