@@ -329,8 +329,6 @@ class ConnectycubeFlutterCallKit {
         break;
 
       case 'startCall':
-        var callEvent = CallEvent.fromMap(arguments);
-        _onCallIncoming?.call(callEvent);
         break;
 
       case 'setMuted':
@@ -339,6 +337,11 @@ class ConnectycubeFlutterCallKit {
 
       case 'setUnMuted':
         onCallMuted?.call(false, arguments["session_id"]);
+        break;
+
+      case 'incomingCall':
+        var callEvent = CallEvent.fromMap(arguments);
+        _onCallIncoming?.call(callEvent);
         break;
 
       case '':

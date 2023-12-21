@@ -10,6 +10,7 @@ import AVFoundation
 import CallKit
 
 enum CallEvent : String {
+    case incomingCall = "incomingCall"
     case answerCall = "answerCall"
     case endCall = "endCall"
     case setHeld = "setHeld"
@@ -125,6 +126,8 @@ class CallKitController : NSObject {
                     
                     self.callStates[uuid] = .pending
                     self.callsData[uuid] = self.currentCallData
+
+                    actionListener?(.incomingCall, uuid, self.currentCallData)
                 }
             }
         } else if (self.currentCallData["session_id"] as! String == uuid) {
