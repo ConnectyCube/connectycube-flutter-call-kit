@@ -127,7 +127,7 @@ class CallKitController : NSObject {
                     self.callStates[uuid] = .pending
                     self.callsData[uuid] = self.currentCallData
 
-                    actionListener?(.incomingCall, uuid, self.currentCallData)
+                    actionListener?(.incomingCall, UUID(uuidString: uuid)!, self.currentCallData)
                 }
             }
         } else if (self.currentCallData["session_id"] as! String == uuid) {
