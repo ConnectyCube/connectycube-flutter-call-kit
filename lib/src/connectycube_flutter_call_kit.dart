@@ -51,6 +51,8 @@ class ConnectycubeFlutterCallKit {
   static CallEventHandler? _onCallAccepted;
   static CallEventHandler? _onCallRejected;
 
+  static CallEventHandler? _onCallIncoming;
+
   /// Initialize the plugin and provided user callbacks.
   ///
   /// - This function should only be called once at the beginning of
@@ -58,6 +60,7 @@ class ConnectycubeFlutterCallKit {
   void init(
       {CallEventHandler? onCallAccepted,
       CallEventHandler? onCallRejected,
+      CallEventHandler? onCallIncoming,
       String? ringtone,
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
@@ -65,6 +68,7 @@ class ConnectycubeFlutterCallKit {
       String? color}) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
+    _onCallIncoming = onCallIncoming;
 
     updateConfig(
         ringtone: ringtone,
@@ -325,6 +329,8 @@ class ConnectycubeFlutterCallKit {
         break;
 
       case 'startCall':
+        var callEvent = CallEvent.fromMap(arguments);
+        _onCallIncoming?.call(callEvent);
         break;
 
       case 'setMuted':
