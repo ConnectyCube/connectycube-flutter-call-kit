@@ -537,8 +537,6 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent == null || TextUtils.isEmpty(intent.action)) return
 
-        Log.d("ConnectycubeFlutterCallKitPlugin", "onReceive action: ${intent.action}")
-
         val action: String? = intent.action
 
         if (ACTION_TOKEN_REFRESHED == action) {
@@ -553,8 +551,11 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action) {
             return
         }
+        Log.d("ConnectycubeFlutterCallKitPlugin", "onReceive action: ${intent.action}")
 
         val callIdToProcess: String? = intent.getStringExtra(EXTRA_CALL_ID)
+        Log.d("ConnectycubeFlutterCallKitPlugin", "callIdToProcess: $callIdToProcess")
+
         if (TextUtils.isEmpty(callIdToProcess)) return
 
         val callEventMap = HashMap<String, Any?>()
