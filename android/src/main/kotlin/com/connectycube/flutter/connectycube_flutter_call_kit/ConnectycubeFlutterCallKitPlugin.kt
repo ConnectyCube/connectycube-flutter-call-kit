@@ -525,6 +525,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         val intentFilter = IntentFilter()
         intentFilter.addAction(ACTION_CALL_REJECT)
         intentFilter.addAction(ACTION_CALL_ACCEPT)
+        intentFilter.addAction(ACTION_CALL_INCOMING)
         localBroadcastManager.registerReceiver(this, intentFilter)
     }
 
@@ -588,6 +589,11 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
                 val launchIntent = getLaunchIntent(context!!)
                 launchIntent?.action = ACTION_CALL_ACCEPT
                 context.startActivity(launchIntent)
+            }
+
+            ACTION_CALL_INCOMING -> {
+                callbackData["event"] = "incomingCall"
+                events?.success(callbackData)
             }
         }
     }

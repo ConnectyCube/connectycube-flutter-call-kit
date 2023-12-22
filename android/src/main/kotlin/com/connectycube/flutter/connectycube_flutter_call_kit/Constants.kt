@@ -11,6 +11,7 @@ const val EXTRA_CALL_PHOTO = "photo_url"
 
 const val ACTION_CALL_ACCEPT = "action_call_accept"
 const val ACTION_CALL_REJECT = "action_call_reject"
+const val ACTION_CALL_INCOMING = "action_call_incoming"
 const val ACTION_CALL_NOTIFICATION_CANCELED = "action_call_notification_canceled"
 const val ACTION_CALL_ENDED = "action_call_ended"
 const val ACTION_TOKEN_REFRESHED = "action_token_refreshed"
