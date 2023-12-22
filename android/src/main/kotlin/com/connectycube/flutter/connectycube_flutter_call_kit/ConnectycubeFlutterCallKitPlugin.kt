@@ -537,6 +537,8 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent == null || TextUtils.isEmpty(intent.action)) return
 
+        Log.d("ConnectycubeFlutterCallKitPlugin", "onReceive action: ${intent.action}")
+
         val action: String? = intent.action
 
         if (ACTION_TOKEN_REFRESHED == action) {

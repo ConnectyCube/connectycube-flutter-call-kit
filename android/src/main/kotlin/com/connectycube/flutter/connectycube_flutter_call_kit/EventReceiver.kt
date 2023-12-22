@@ -18,6 +18,8 @@ class EventReceiver : BroadcastReceiver() {
 
         if (intent == null || TextUtils.isEmpty(intent.action)) return
 
+        Log.d(TAG, "NotificationReceiver onReceive action: ${intent.action}")
+
         when (intent.action) {
             ACTION_CALL_INCOMING -> {
                 val extras = intent.extras
