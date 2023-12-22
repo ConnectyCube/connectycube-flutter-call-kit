@@ -87,14 +87,14 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
         }
 
         if (data["signal_type"] == "startCall") {
-            val callData = Bundle()
-            callData.putString(EXTRA_CALL_ID, callId)
-            callData.putInt(EXTRA_CALL_TYPE, callType)
-            callData.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
-            callData.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
-            callData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
-            callData.putString(EXTRA_CALL_PHOTO, callPhoto)
-            callData.putString(EXTRA_CALL_USER_INFO, userInfo)
+            val callData = new Bundle()
+            callData.putString("extra_call_id", callId)
+            // callData.putInt(EXTRA_CALL_TYPE, callType)
+            // callData.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+            // callData.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+            // callData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+            // callData.putString(EXTRA_CALL_PHOTO, callPhoto)
+            // callData.putString(EXTRA_CALL_USER_INFO, userInfo)
 
             LocalBroadcastManager.getInstance(applicationContext)
             .sendBroadcast(Intent(ACTION_CALL_INCOMING).putExtra(callData))
