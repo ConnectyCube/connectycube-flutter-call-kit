@@ -92,7 +92,7 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
                 .putExtra(EXTRA_CALL_TYPE, callType)
                 .putExtra(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
                 .putExtra(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
-                .putExtra(EXTRA_CALL_OPPONENTS, callOpponentsString)
+                .putExtra(EXTRA_CALL_OPPONENTS, callOpponents)
                 .putExtra(EXTRA_CALL_PHOTO, callPhoto)
                 .putExtra(EXTRA_CALL_USER_INFO, userInfo)
 

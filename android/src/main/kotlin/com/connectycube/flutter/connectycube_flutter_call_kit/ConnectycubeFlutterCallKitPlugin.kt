@@ -86,6 +86,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
             }
 
             "startBackgroundIsolate" -> {
+
                 @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
                     call.arguments as Map<String, Any>
 
@@ -93,7 +94,6 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                 val userCallbackHandle: Long
                 val userCallbackHandleName: String =
                     arguments["userCallbackHandleName"]?.toString() ?: ""
-
 
                 val arg1 = arguments["pluginCallbackHandle"] ?: -1L
                 val arg2 = arguments["userCallbackHandle"] ?: -1L
@@ -126,6 +126,8 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     saveBackgroundRejectHandler(applicationContext, userCallbackHandle)
                 } else if (ACCEPTED_IN_BACKGROUND == userCallbackHandleName) {
                     saveBackgroundAcceptHandler(applicationContext, userCallbackHandle)
+                } else if (INCOMING_IN_BACKGROUND == userCallbackHandleName) {
+                    saveBackgroundIncomingCallHandler(applicationContext, userCallbackHandle)
                 }
 
                 ConnectycubeFlutterBgPerformingService.startBackgroundIsolate(
@@ -466,6 +468,22 @@ fun getBackgroundAcceptHandler(applicationContext: Context?): Long {
     if (applicationContext == null) return -1L
 
     return getLong(applicationContext, "background_callback_accept")
+}
+
+fun saveBackgroundIncomingCallHandler(applicationContext: Context?, callbackId: Long) {
+    if (applicationContext == null) return
+
+    try {
+        putLong(applicationContext, "background_callback_incoming_call", callbackId)
+    } catch (e: Exception) {
+        // ignore
+    }
+}
+
+fun getBackgroundIncomingCallHandler(applicationContext: Context?): Long {
+    if (applicationContext == null) return -1L
+
+    return getLong(applicationContext, "background_callback_incoming_call")
 }
 
 fun saveBackgroundRejectHandler(applicationContext: Context?, callbackId: Long) {

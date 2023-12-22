@@ -18,6 +18,7 @@ const val ACTION_TOKEN_REFRESHED = "action_token_refreshed"
 
 const val REJECTED_IN_BACKGROUND = "rejected_in_background"
 const val ACCEPTED_IN_BACKGROUND = "accepted_in_background"
+const val INCOMING_IN_BACKGROUND = "incoming_in_background"
 
 const val CALL_TYPE_PLACEHOLDER = "Incoming %s call"
 

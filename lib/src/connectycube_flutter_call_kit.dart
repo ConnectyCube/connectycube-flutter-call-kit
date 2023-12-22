@@ -47,6 +47,7 @@ class ConnectycubeFlutterCallKit {
 
   static CallEventHandler? _onCallRejectedWhenTerminated;
   static CallEventHandler? _onCallAcceptedWhenTerminated;
+  static CallEventHandler? _onCallIncomingWhenTerminated;
 
   static CallEventHandler? _onCallAccepted;
   static CallEventHandler? _onCallRejected;
@@ -104,6 +105,20 @@ class ConnectycubeFlutterCallKit {
     if (handler != null) {
       instance._registerBackgroundCallEventHandler(
           handler, BackgroundCallbackName.ACCEPTED_IN_BACKGROUND);
+    }
+  }
+
+  /// Set an incoming call handler function which is called when the app is in the
+  /// background or terminated.
+  ///
+  /// This provided handler must be a top-level function and cannot be
+  /// anonymous otherwise an [ArgumentError] will be thrown.
+  static set onCallIncomingWhenTerminated(CallEventHandler? handler) {
+    _onCallIncomingWhenTerminated = handler;
+
+    if (handler != null) {
+      instance._registerBackgroundCallEventHandler(
+          handler, BackgroundCallbackName.INCOMING_IN_BACKGROUND);
     }
   }
 
@@ -408,4 +423,5 @@ class CallState {
 class BackgroundCallbackName {
   static const String REJECTED_IN_BACKGROUND = "rejected_in_background";
   static const String ACCEPTED_IN_BACKGROUND = "accepted_in_background";
+  static const String INCOMING_IN_BACKGROUND = "incoming_in_background";
 }
