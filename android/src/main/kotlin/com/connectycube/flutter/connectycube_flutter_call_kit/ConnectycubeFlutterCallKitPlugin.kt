@@ -548,13 +548,11 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
 
             events?.success(parameters)
             return
-        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action) {
+        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action && ACTION_CALL_INCOMING != action) {
             return
         }
-        Log.d("ConnectycubeFlutterCallKitPlugin", "onReceive action: ${intent.action}")
 
         val callIdToProcess: String? = intent.getStringExtra(EXTRA_CALL_ID)
-        Log.d("ConnectycubeFlutterCallKitPlugin", "callIdToProcess: $callIdToProcess")
 
         if (TextUtils.isEmpty(callIdToProcess)) return
 
