@@ -99,6 +99,8 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
 
             LocalBroadcastManager.getInstance(applicationContext)
             .sendBroadcast(Intent(ACTION_CALL_INCOMING).putExtra(EXTRA_CALL_ID, callId))
+
+            Log.d(TAG, "[processInviteCallEvent] ACTION_CALL_INCOMING sent")
         }
 
         showCallNotification(
