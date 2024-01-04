@@ -99,6 +99,13 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
             LocalBroadcastManager.getInstance(applicationContext)
             .sendBroadcast(intent)
 
+            if (!isApplicationForeground(applicationContext)) {
+                ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
+                    context,
+                    intent
+                )
+            }
+
             Log.d(TAG, "[processInviteCallEvent] sendBroadcast ACTION_CALL_INCOMING $callId")
         }
 
