@@ -22,40 +22,6 @@ class EventReceiver : BroadcastReceiver() {
         Log.d(TAG, "NotificationReceiver onReceive action: ${intent.action}")
 
         when (intent.action) {
-            ACTION_CALL_INCOMING -> {
-                val extras = intent.extras
-                val callId = extras?.getString(EXTRA_CALL_ID)
-                val callType = extras?.getInt(EXTRA_CALL_TYPE)
-                val callInitiatorId = extras?.getInt(EXTRA_CALL_INITIATOR_ID)
-                val callInitiatorName = extras?.getString(EXTRA_CALL_INITIATOR_NAME)
-                val callOpponents = extras?.getIntegerArrayList(EXTRA_CALL_OPPONENTS)
-                val callPhoto = extras?.getString(EXTRA_CALL_PHOTO)
-                val userInfo = extras?.getString(EXTRA_CALL_USER_INFO)
-                Log.i(TAG, "NotificationReceiver onReceive Call INCOMING, callId: $callId")
-
-                val broadcastIntent = Intent(ACTION_CALL_INCOMING)
-                val bundle = Bundle()
-                bundle.putString(EXTRA_CALL_ID, callId)
-                bundle.putInt(EXTRA_CALL_TYPE, callType!!)
-                bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId!!)
-                bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
-                bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
-                bundle.putString(EXTRA_CALL_PHOTO, callPhoto)
-                bundle.putString(EXTRA_CALL_USER_INFO, userInfo)
-                broadcastIntent.putExtras(bundle)
-
-                LocalBroadcastManager.getInstance(context.applicationContext)
-                    .sendBroadcast(broadcastIntent)
-
-                if (!isApplicationForeground(context)) {
-                    broadcastIntent.putExtra("userCallbackHandleName", INCOMING_IN_BACKGROUND)
-                    ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
-                        context,
-                        broadcastIntent
-                    )
-                }
-            }
-
             ACTION_CALL_REJECT -> {
                 val extras = intent.extras
                 val callId = extras?.getString(EXTRA_CALL_ID)

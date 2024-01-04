@@ -220,7 +220,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
         if (userCallbackHandle == -1L) {
             Log.e(
                 "FlutterConnectycubeBackgroundExecutor",
-                "No one background handler has been registered."
+                "${intent.action} background handler has not been registered."
             )
             return
         }

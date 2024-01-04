@@ -9,6 +9,8 @@ import com.connectycube.flutter.connectycube_flutter_call_kit.utils.ContextHolde
 import com.google.firebase.messaging.RemoteMessage
 import org.json.JSONObject
 import android.os.Bundle
+import com.connectycube.flutter.connectycube_flutter_call_kit.background_isolates.ConnectycubeFlutterBgPerformingService
+import com.connectycube.flutter.connectycube_flutter_call_kit.utils.isApplicationForeground
 
 
 class ConnectycubeFCMReceiver : BroadcastReceiver() {
@@ -96,12 +98,13 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
                 .putExtra(EXTRA_CALL_PHOTO, callPhoto)
                 .putExtra(EXTRA_CALL_USER_INFO, userInfo)
 
-            LocalBroadcastManager.getInstance(applicationContext)
-            .sendBroadcast(intent)
-
-            if (!isApplicationForeground(applicationContext)) {
+            if (isApplicationForeground(applicationContext)) {
+                LocalBroadcastManager.getInstance(applicationContext)
+                .sendBroadcast(intent)
+            } else {
+                intent.putExtra("userCallbackHandleName", INCOMING_IN_BACKGROUND)
                 ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
-                    context,
+                    applicationContext,
                     intent
                 )
             }
