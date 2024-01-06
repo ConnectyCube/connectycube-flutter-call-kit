@@ -4,13 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.ContextHolder
 import com.google.firebase.messaging.RemoteMessage
 import org.json.JSONObject
 import android.os.Bundle
-import com.connectycube.flutter.connectycube_flutter_call_kit.background_isolates.ConnectycubeFlutterBgPerformingService
-import com.connectycube.flutter.connectycube_flutter_call_kit.utils.isApplicationForeground
 
 
 class ConnectycubeFCMReceiver : BroadcastReceiver() {
@@ -88,30 +85,17 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
             return
         }
 
-        if (data["signal_type"] == "startCall") {
-            val intent = Intent(ACTION_CALL_INCOMING)
-                .putExtra(EXTRA_CALL_ID, callId)
-                .putExtra(EXTRA_CALL_TYPE, callType)
-                .putExtra(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
-                .putExtra(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
-                .putExtra(EXTRA_CALL_OPPONENTS, callOpponents)
-                .putExtra(EXTRA_CALL_PHOTO, callPhoto)
-                .putExtra(EXTRA_CALL_USER_INFO, userInfo)
-
-            if (isApplicationForeground(applicationContext)) {
-                LocalBroadcastManager.getInstance(applicationContext)
-                .sendBroadcast(intent)
-            } else {
-                intent.putExtra("userCallbackHandleName", INCOMING_IN_BACKGROUND)
-                ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
-                    applicationContext,
-                    intent
-                )
-            }
-
-            Log.d(TAG, "[processInviteCallEvent] sendBroadcast ACTION_CALL_INCOMING $callId")
-        }
-
+        notifyAboutIncomingCall(
+            applicationContext,
+            callId,
+            callType,
+            callInitiatorId,
+            callInitiatorName,
+            callOpponents,
+            callPhoto,
+            userInfo
+        )
+            
         showCallNotification(
             applicationContext,
             callId,

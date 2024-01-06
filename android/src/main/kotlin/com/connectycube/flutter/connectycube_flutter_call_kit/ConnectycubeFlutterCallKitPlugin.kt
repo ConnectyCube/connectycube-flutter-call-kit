@@ -380,6 +380,33 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
     }
 }
 
+fun notifyAboutIncomingCall(
+    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String
+) {
+    val intent = Intent(ACTION_CALL_INCOMING)
+        .putExtra(EXTRA_CALL_ID, callId)
+        .putExtra(EXTRA_CALL_TYPE, callType)
+        .putExtra(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        .putExtra(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+        .putExtra(EXTRA_CALL_OPPONENTS, callOpponents)
+        .putExtra(EXTRA_CALL_PHOTO, callPhoto)
+        .putExtra(EXTRA_CALL_USER_INFO, userInfo)
+
+    if (isApplicationForeground(context)) {
+        LocalBroadcastManager.getInstance(context)
+        .sendBroadcast(intent)
+    } else {
+        intent.putExtra("userCallbackHandleName", INCOMING_IN_BACKGROUND)
+        ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
+            context,
+            intent
+        )
+    }
+
+    Log.d("ConnectycubeFlutterCallKitPlugin", "[notifyAboutIncomingCall] sendBroadcast ACTION_CALL_INCOMING $callId")
+}
+
 fun saveCallState(applicationContext: Context?, callId: String, callState: String) {
     if (applicationContext == null) return
 
