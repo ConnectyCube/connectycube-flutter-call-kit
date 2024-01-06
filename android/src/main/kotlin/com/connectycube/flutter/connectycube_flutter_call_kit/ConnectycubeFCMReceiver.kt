@@ -7,7 +7,6 @@ import android.util.Log
 import com.connectycube.flutter.connectycube_flutter_call_kit.utils.ContextHolder
 import com.google.firebase.messaging.RemoteMessage
 import org.json.JSONObject
-import android.os.Bundle
 
 
 class ConnectycubeFCMReceiver : BroadcastReceiver() {
