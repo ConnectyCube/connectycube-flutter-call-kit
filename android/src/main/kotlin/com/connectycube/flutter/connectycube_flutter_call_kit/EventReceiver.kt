@@ -14,9 +14,12 @@ import com.connectycube.flutter.connectycube_flutter_call_kit.utils.isApplicatio
 
 class EventReceiver : BroadcastReceiver() {
     private val TAG = "EventReceiver"
+
     override fun onReceive(context: Context, intent: Intent?) {
 
         if (intent == null || TextUtils.isEmpty(intent.action)) return
+
+        Log.d(TAG, "NotificationReceiver onReceive action: ${intent.action}")
 
         when (intent.action) {
             ACTION_CALL_REJECT -> {

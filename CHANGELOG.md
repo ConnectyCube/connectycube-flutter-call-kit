@@ -1,3 +1,6 @@
+## 2.6.0
+- Implemented the Notify for Incoming Calls feature (thanks for [tungs0ul](https://github.com/tungs0ul));
+
 ## 2.5.0
 - (Android) Add API to manage the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission;
 

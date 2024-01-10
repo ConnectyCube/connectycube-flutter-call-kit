@@ -135,6 +135,7 @@ Add the listeners during initialization of the plugin:
 ConnectycubeFlutterCallKit.instance.init(
     onCallAccepted: _onCallAccepted,
     onCallRejected: _onCallRejected,
+    onCallIncoming: _onCallIncoming,
 );
 
 Future<void> _onCallAccepted(CallEvent callEvent) async {
@@ -144,6 +145,10 @@ Future<void> _onCallAccepted(CallEvent callEvent) async {
 Future<void> _onCallRejected(CallEvent callEvent) async {
     // the call was rejected
 }
+
+Future<void> _onCallRejected(CallEvent callEvent) async {
+    // the Incoming call screen/notification was shown for user
+}
 ```
 
 #### Listen in the background or terminated state (Android only):
@@ -151,9 +156,10 @@ Future<void> _onCallRejected(CallEvent callEvent) async {
 ```dart
 ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated = onCallRejectedWhenTerminated;
 ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerminated;
+ConnectycubeFlutterCallKit.onCallIncomingWhenTerminated = onCallIncomingWhenTerminated;
 ```
 
-!> Attention: the functions `onCallRejectedWhenTerminated` and `onCallAcceptedWhenTerminated` must 
+!> Attention: the functions `onCallRejectedWhenTerminated`, `onCallAcceptedWhenTerminated` and `onCallIncomingWhenTerminated` must 
 be a top-level functions and cannot be anonymous. Mark these callbacks with the `@pragma('vm:entry-point')` 
 annotation to allow using them from the native code.
 

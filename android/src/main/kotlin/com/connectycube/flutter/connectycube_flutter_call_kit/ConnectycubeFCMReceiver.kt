@@ -84,6 +84,17 @@ class ConnectycubeFCMReceiver : BroadcastReceiver() {
             return
         }
 
+        notifyAboutIncomingCall(
+            applicationContext,
+            callId,
+            callType,
+            callInitiatorId,
+            callInitiatorName,
+            callOpponents,
+            callPhoto,
+            userInfo
+        )
+            
         showCallNotification(
             applicationContext,
             callId,
