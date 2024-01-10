@@ -86,6 +86,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
             }
 
             "startBackgroundIsolate" -> {
+
                 @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
                     call.arguments as Map<String, Any>
 
@@ -93,7 +94,6 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                 val userCallbackHandle: Long
                 val userCallbackHandleName: String =
                     arguments["userCallbackHandleName"]?.toString() ?: ""
-
 
                 val arg1 = arguments["pluginCallbackHandle"] ?: -1L
                 val arg2 = arguments["userCallbackHandle"] ?: -1L
@@ -126,6 +126,8 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     saveBackgroundRejectHandler(applicationContext, userCallbackHandle)
                 } else if (ACCEPTED_IN_BACKGROUND == userCallbackHandleName) {
                     saveBackgroundAcceptHandler(applicationContext, userCallbackHandle)
+                } else if (INCOMING_IN_BACKGROUND == userCallbackHandleName) {
+                    saveBackgroundIncomingCallHandler(applicationContext, userCallbackHandle)
                 }
 
                 ConnectycubeFlutterBgPerformingService.startBackgroundIsolate(
@@ -378,6 +380,33 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
     }
 }
 
+fun notifyAboutIncomingCall(
+    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String
+) {
+    val intent = Intent(ACTION_CALL_INCOMING)
+        .putExtra(EXTRA_CALL_ID, callId)
+        .putExtra(EXTRA_CALL_TYPE, callType)
+        .putExtra(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        .putExtra(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+        .putExtra(EXTRA_CALL_OPPONENTS, callOpponents)
+        .putExtra(EXTRA_CALL_PHOTO, callPhoto)
+        .putExtra(EXTRA_CALL_USER_INFO, userInfo)
+
+    if (isApplicationForeground(context)) {
+        LocalBroadcastManager.getInstance(context)
+        .sendBroadcast(intent)
+    } else {
+        intent.putExtra("userCallbackHandleName", INCOMING_IN_BACKGROUND)
+        ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
+            context,
+            intent
+        )
+    }
+
+    Log.d("ConnectycubeFlutterCallKitPlugin", "[notifyAboutIncomingCall] sendBroadcast ACTION_CALL_INCOMING $callId")
+}
+
 fun saveCallState(applicationContext: Context?, callId: String, callState: String) {
     if (applicationContext == null) return
 
@@ -468,6 +497,22 @@ fun getBackgroundAcceptHandler(applicationContext: Context?): Long {
     return getLong(applicationContext, "background_callback_accept")
 }
 
+fun saveBackgroundIncomingCallHandler(applicationContext: Context?, callbackId: Long) {
+    if (applicationContext == null) return
+
+    try {
+        putLong(applicationContext, "background_callback_incoming_call", callbackId)
+    } catch (e: Exception) {
+        // ignore
+    }
+}
+
+fun getBackgroundIncomingCallHandler(applicationContext: Context?): Long {
+    if (applicationContext == null) return -1L
+
+    return getLong(applicationContext, "background_callback_incoming_call")
+}
+
 fun saveBackgroundRejectHandler(applicationContext: Context?, callbackId: Long) {
     if (applicationContext == null) return
 
@@ -525,6 +570,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         val intentFilter = IntentFilter()
         intentFilter.addAction(ACTION_CALL_REJECT)
         intentFilter.addAction(ACTION_CALL_ACCEPT)
+        intentFilter.addAction(ACTION_CALL_INCOMING)
         localBroadcastManager.registerReceiver(this, intentFilter)
     }
 
@@ -547,11 +593,12 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
 
             events?.success(parameters)
             return
-        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action) {
+        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action && ACTION_CALL_INCOMING != action) {
             return
         }
 
         val callIdToProcess: String? = intent.getStringExtra(EXTRA_CALL_ID)
+
         if (TextUtils.isEmpty(callIdToProcess)) return
 
         val callEventMap = HashMap<String, Any?>()
@@ -588,6 +635,11 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
                 val launchIntent = getLaunchIntent(context!!)
                 launchIntent?.action = ACTION_CALL_ACCEPT
                 context.startActivity(launchIntent)
+            }
+
+            ACTION_CALL_INCOMING -> {
+                callbackData["event"] = "incomingCall"
+                events?.success(callbackData)
             }
         }
     }
