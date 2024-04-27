@@ -22,11 +22,10 @@ getting token and displaying the Incoming call screen.
 - some customizations according to your app needs (ringtone, app icon, accent color(for Android))
 - checking and changing the access to the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission (for Android 14 and above)
 
+incoming call in background Android | incoming call locked Android | incoming call in background iOS | incoming call locked iOS
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![incoming call in background Android](https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png) | ![incoming call locked Android](https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android_locked.png) | ![incoming call in background iOS](https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios.PNG) | ![incoming call locked iOS](https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios_locked.PNG)
 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android.png" height="440" /></kbd> 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd> 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call in background iOS" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios.PNG" height="440" /></kbd>
-<kbd><img alt="Flutter P2P Calls code sample, incoming call locked iOS" src="https://developers.connectycube.com/docs/_images/code_samples/flutter/background_call_ios_locked.PNG" height="440" /></kbd>
 
 ## Configure your project
 
