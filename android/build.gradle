@@ -9,9 +9,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.1.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.10'
+        classpath 'com.google.gms:google-services:4.3.15'
     }
 }
 
@@ -28,26 +28,41 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 34
 
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.connectycube.flutter.connectycube_flutter_call_kit'
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
+
     defaultConfig {
         minSdkVersion 21
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     lintOptions {
         disable 'InvalidPackage'
     }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'com.google.android.material:material:1.10.0'
     implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
-    implementation 'com.github.bumptech.glide:glide:4.14.2'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 
-    implementation platform('com.google.firebase:firebase-bom:29.0.3')
+    implementation platform('com.google.firebase:firebase-bom:32.3.1')
     implementation 'com.google.firebase:firebase-messaging-ktx'
 }
