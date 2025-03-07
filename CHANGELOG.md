@@ -1,5 +1,8 @@
+## 2.8.0
+- Update AGP to 8.9.0 and fix related issues;
+
 ## 2.7.0
-- Implemented closing of the iOS CallKit by VoIP push notification where `signal_type` is 'endCall' or 'rejectCall'; 
+- Implemented closing of the iOS CallKit by VoIP push notification where `signal_type` is 'endCall' or 'rejectCall';
 
 ## 2.6.0
 - Implemented the Notify for Incoming Calls feature (thanks for [tungs0ul](https://github.com/tungs0ul));
