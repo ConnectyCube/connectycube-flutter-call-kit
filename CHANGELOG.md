@@ -1,3 +1,6 @@
+## 2.8.1
+- (Android) Fix decline/reject in terminated state;
+
 ## 2.8.0
 - Update AGP to 8.9.0 and fix related issues;
 
