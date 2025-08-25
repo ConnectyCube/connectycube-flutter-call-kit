@@ -222,6 +222,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
                 "FlutterConnectycubeBackgroundExecutor",
                 "${intent.action} background handler has not been registered."
             )
+            latch?.countDown()
             return
         }
 
@@ -232,6 +233,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
                 "FlutterConnectycubeBackgroundExecutor",
                 "The call data not found in Intent."
             )
+            latch?.countDown()
             return
         }
 

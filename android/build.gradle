@@ -1,5 +1,5 @@
 group 'com.connectycube.flutter.connectycube_flutter_call_kit'
-version '2.8.0'
+version '2.8.1'
 
 buildscript {
     ext.kotlin_version = '1.9.20'
