@@ -1,3 +1,7 @@
+## 2.8.2
+- (Android) Fix notification handling in Android 12 and above;
+- (Android) Migrate to using the Kotlin extensions (KTX) APIs in the main modules;
+
 ## 2.8.1
 - (Android) Fix decline/reject in terminated state;
 
