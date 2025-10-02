@@ -20,6 +20,11 @@
             android:theme="@style/CallkitIncomingTheme"
             android:turnScreenOn="true" />
 
+        <activity
+            android:name=".NotificationTrampolineActivity"
+            android:excludeFromRecents="true"
+            android:noHistory="true" />
+
         <service
             android:name=".background_isolates.ConnectycubeFlutterBgPerformingService"
             android:exported="false"

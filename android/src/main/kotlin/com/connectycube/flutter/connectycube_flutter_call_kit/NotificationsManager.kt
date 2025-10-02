@@ -236,6 +236,17 @@ fun getAcceptCallIntent(
     callData: Bundle,
     requestCode: Int
 ): PendingIntent {
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        return PendingIntent.getActivity(
+            context,
+            requestCode,
+            Intent(context.applicationContext, NotificationTrampolineActivity::class.java)
+                .setAction(ACTION_CALL_ACCEPT)
+                .putExtras(callData),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
     return PendingIntent.getBroadcast(
         context,
         requestCode,
