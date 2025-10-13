@@ -48,11 +48,14 @@ class ConnectycubeFlutterCallKit {
   static CallEventHandler? _onCallRejectedWhenTerminated;
   static CallEventHandler? _onCallAcceptedWhenTerminated;
   static CallEventHandler? _onCallIncomingWhenTerminated;
+  static CallEventHandler? _onCallTapWhenTerminated;
 
   static CallEventHandler? _onCallAccepted;
   static CallEventHandler? _onCallRejected;
 
   static CallEventHandler? _onCallIncoming;
+
+  static CallEventHandler? _onCallTap;
 
   /// Initialize the plugin and provided user callbacks.
   ///
@@ -62,6 +65,7 @@ class ConnectycubeFlutterCallKit {
       {CallEventHandler? onCallAccepted,
       CallEventHandler? onCallRejected,
       CallEventHandler? onCallIncoming,
+      CallEventHandler? onCallTap,
       String? ringtone,
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
@@ -70,6 +74,7 @@ class ConnectycubeFlutterCallKit {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
     _onCallIncoming = onCallIncoming;
+    _onCallTap = onCallTap;
 
     updateConfig(
         ringtone: ringtone,
@@ -119,6 +124,15 @@ class ConnectycubeFlutterCallKit {
     if (handler != null) {
       instance._registerBackgroundCallEventHandler(
           handler, BackgroundCallbackName.INCOMING_IN_BACKGROUND);
+    }
+  }
+
+  static set onCallTapWhenTerminated(CallEventHandler? handler) {
+    _onCallTapWhenTerminated = handler;
+
+    if (handler != null) {
+      instance._registerBackgroundCallEventHandler(
+          handler, BackgroundCallbackName.TAP_IN_BACKGROUND);
     }
   }
 
@@ -359,6 +373,11 @@ class ConnectycubeFlutterCallKit {
         _onCallIncoming?.call(callEvent);
         break;
 
+      case 'tapCall':
+        var callEvent = CallEvent.fromMap(arguments);
+        _onCallTap?.call(callEvent);
+        break;
+
       case '':
         break;
 
@@ -424,4 +443,5 @@ class BackgroundCallbackName {
   static const String REJECTED_IN_BACKGROUND = "rejected_in_background";
   static const String ACCEPTED_IN_BACKGROUND = "accepted_in_background";
   static const String INCOMING_IN_BACKGROUND = "incoming_in_background";
+  static const String TAP_IN_BACKGROUND = "tap_in_background";
 }

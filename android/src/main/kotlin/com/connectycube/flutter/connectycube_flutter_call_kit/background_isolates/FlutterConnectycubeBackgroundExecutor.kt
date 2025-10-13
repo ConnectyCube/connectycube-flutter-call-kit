@@ -215,6 +215,8 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
             userCallbackHandle = getBackgroundAcceptHandler(ContextHolder.applicationContext)
         } else if (INCOMING_IN_BACKGROUND == callEventName) {
             userCallbackHandle = getBackgroundIncomingCallHandler(ContextHolder.applicationContext)
+        } else if (TAP_IN_BACKGROUND == callEventName) {
+            userCallbackHandle = getBackgroundTapCallHandler(ContextHolder.applicationContext)
         }
 
         if (userCallbackHandle == -1L) {

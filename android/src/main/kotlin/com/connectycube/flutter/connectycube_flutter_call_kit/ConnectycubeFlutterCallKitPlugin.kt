@@ -128,6 +128,8 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     saveBackgroundAcceptHandler(applicationContext, userCallbackHandle)
                 } else if (INCOMING_IN_BACKGROUND == userCallbackHandleName) {
                     saveBackgroundIncomingCallHandler(applicationContext, userCallbackHandle)
+                } else if (TAP_IN_BACKGROUND == userCallbackHandleName) {
+                    saveBackgroundTapCallHandler(applicationContext, userCallbackHandle)
                 }
 
                 ConnectycubeFlutterBgPerformingService.startBackgroundIsolate(
@@ -507,10 +509,26 @@ fun saveBackgroundIncomingCallHandler(applicationContext: Context?, callbackId: 
     }
 }
 
+fun saveBackgroundTapCallHandler(applicationContext: Context?, callbackId: Long) {
+    if (applicationContext == null) return
+
+    try {
+        putLong(applicationContext, "background_callback_tap_call", callbackId)
+    } catch (e: Exception) {
+        // ignore
+    }
+}
+
 fun getBackgroundIncomingCallHandler(applicationContext: Context?): Long {
     if (applicationContext == null) return -1L
 
     return getLong(applicationContext, "background_callback_incoming_call")
+}
+
+fun getBackgroundTapCallHandler(applicationContext: Context?): Long {
+    if (applicationContext == null) return -1L
+
+    return getLong(applicationContext, "background_callback_tap_call")
 }
 
 fun saveBackgroundRejectHandler(applicationContext: Context?, callbackId: Long) {
@@ -571,6 +589,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         intentFilter.addAction(ACTION_CALL_REJECT)
         intentFilter.addAction(ACTION_CALL_ACCEPT)
         intentFilter.addAction(ACTION_CALL_INCOMING)
+        intentFilter.addAction(ACTION_CALL_TAP)
         localBroadcastManager.registerReceiver(this, intentFilter)
     }
 
@@ -593,7 +612,8 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
 
             events?.success(parameters)
             return
-        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action && ACTION_CALL_INCOMING != action) {
+        } else if (ACTION_CALL_REJECT != action && ACTION_CALL_ACCEPT != action && ACTION_CALL_INCOMING != action
+            && ACTION_CALL_TAP != action) {
             return
         }
 
@@ -639,6 +659,11 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
 
             ACTION_CALL_INCOMING -> {
                 callbackData["event"] = "incomingCall"
+                events?.success(callbackData)
+            }
+
+            ACTION_CALL_TAP -> {
+                callbackData["event"] = "tapCall"
                 events?.success(callbackData)
             }
         }

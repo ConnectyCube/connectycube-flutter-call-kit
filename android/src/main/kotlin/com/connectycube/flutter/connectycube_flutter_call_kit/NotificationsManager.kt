@@ -48,14 +48,30 @@ fun showCallNotification(
         "[showCallNotification] canUseFullScreenIntent: ${notificationManager.canUseFullScreenIntent()}"
     )
 
-    val intent = getLaunchIntent(context)
+    val callData = Bundle()
+    callData.putString(EXTRA_CALL_ID, callId)
+    callData.putInt(EXTRA_CALL_TYPE, callType)
+    callData.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+    callData.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+    callData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+    callData.putString(EXTRA_CALL_PHOTO, callPhoto)
+    callData.putString(EXTRA_CALL_USER_INFO, userInfo)
 
-    val pendingIntent = PendingIntent.getActivity(
+    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        PendingIntent.getActivity(
+            context,
+            callId.hashCode(),
+            Intent(context.applicationContext, NotificationTrampolineActivity::class.java)
+                .setAction(ACTION_CALL_TAP)
+                .putExtras(callData),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        ) else PendingIntent.getBroadcast(
         context,
         callId.hashCode(),
-        intent,
+        Intent(context, EventReceiver::class.java)
+            .setAction(ACTION_CALL_TAP)
+            .putExtras(callData),
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-
     )
 
     var ringtone: Uri
@@ -73,15 +89,6 @@ fun showCallNotification(
 
     val callTypeTitle =
         String.format(CALL_TYPE_PLACEHOLDER, if (isVideoCall) "Video" else "Audio")
-
-    val callData = Bundle()
-    callData.putString(EXTRA_CALL_ID, callId)
-    callData.putInt(EXTRA_CALL_TYPE, callType)
-    callData.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
-    callData.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
-    callData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
-    callData.putString(EXTRA_CALL_PHOTO, callPhoto)
-    callData.putString(EXTRA_CALL_USER_INFO, userInfo)
 
     val defaultPhoto = getDefaultPhoto(context)
 

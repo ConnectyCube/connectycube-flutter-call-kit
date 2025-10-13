@@ -12,6 +12,11 @@ class NotificationTrampolineActivity : Activity() {
             startCallIntent.action = ACTION_CALL_ACCEPT
             startCallIntent.putExtras(intent.extras!!)
             applicationContext.sendBroadcast(startCallIntent)
+        } else if (intent.action == ACTION_CALL_TAP) {
+            val startCallIntent = Intent(this, EventReceiver::class.java)
+            startCallIntent.action = ACTION_CALL_TAP
+            startCallIntent.putExtras(intent.extras!!)
+            applicationContext.sendBroadcast(startCallIntent)
         }
         finishAndRemoveTask()
     }
