@@ -1,0 +1,34 @@
+name: Publish to pub.dev
+
+on:
+    pull_request:
+      types:
+        - closed
+
+jobs:
+  publish:
+    if: |
+      contains(github.event.pull_request.title, 'release') == true &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'master'
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v3
+    
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.10.0'
+        channel: 'stable'
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Publish
+      uses: k-paxian/dart-package-publisher@v1.5.1
+      with:
+        accessToken: ${{ secrets.OAUTH_ACCESS_TOKEN }}
+        refreshToken: ${{ secrets.OAUTH_REFRESH_TOKEN }}
+        flutter: true
+        skipTests: true
