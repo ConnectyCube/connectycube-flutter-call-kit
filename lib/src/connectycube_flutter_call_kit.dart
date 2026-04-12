@@ -66,7 +66,8 @@ class ConnectycubeFlutterCallKit {
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
-      String? color}) {
+      String? color,
+      bool? includesCallsInRecents}) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
     _onCallIncoming = onCallIncoming;
@@ -75,7 +76,8 @@ class ConnectycubeFlutterCallKit {
         ringtone: ringtone,
         icon: icon,
         notificationIcon: notificationIcon,
-        color: color);
+        color: color,
+        includesCallsInRecents: includesCallsInRecents);
 
     initEventsHandler();
   }
@@ -159,12 +161,14 @@ class ConnectycubeFlutterCallKit {
   /// [icon] - the name of image in the `drawable` folder for Android and the name of Assests set for iOS
   /// [notificationIcon] - the name of the image in the `drawable` folder, uses as Notification Small Icon for Android, ignored for iOS
   /// [color] - the color in the format '#RRGGBB', uses as an Android Notification accent color, ignored for iOS
+  /// [includesCallsInRecents] - whether to show calls in device call logs, used for iOS only (default value is false)
   Future<void> updateConfig(
       {String? ringtone,
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
-      String? color}) {
+      String? color,
+      bool? includesCallsInRecents}) {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
 
     return _methodChannel.invokeMethod('updateConfig', {
@@ -172,6 +176,7 @@ class ConnectycubeFlutterCallKit {
       'icon': icon,
       'notification_icon': notificationIcon,
       'color': color,
+      'includesCallsInRecents': includesCallsInRecents,
     });
   }
 
@@ -317,6 +322,24 @@ class ConnectycubeFlutterCallKit {
     if (!Platform.isAndroid) return Future.value();
 
     return _methodChannel.invokeMethod("provideFullScreenIntentAccess");
+  }
+
+  /// Start a call in iOS CallKit
+  static Future<void> startCall(CallEvent callEvent) async {
+    if (!Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod("startCall", callEvent.toMap());
+  }
+
+  /// Report a call started connecting (finishedConnecting = false) or connected (finishedConnecting = true) in iOS CallKit
+  static Future<void> reportOutgoingCall(
+      {required String sessionId, required bool finishedConnecting}) async {
+    if (!Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod("reportOutgoingCall", {
+      'session_id': sessionId,
+      'finished_connecting': finishedConnecting,
+    });
   }
 
   static void _processEvent(Map<String, dynamic> eventData) {

@@ -78,7 +78,8 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             }
             let ringtone = arguments["ringtone"] as? String
             let icon = arguments["icon"] as? String
-            CallKitController.updateConfig(ringtone: ringtone, icon: icon)
+            let includesCallsInRecents = arguments["includesCallsInRecents"] as? Bool
+            SwiftConnectycubeFlutterCallKitPlugin.callController.updateConfig(ringtone: ringtone, icon: icon, includesCallsInRecents: includesCallsInRecents)
             
             result(true)
         }
@@ -182,21 +183,37 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
         else if call.method == "getLastCallId" {
             result(SwiftConnectycubeFlutterCallKitPlugin.callController.currentCallData["session_id"])
         }
-        else if call.method == "muteCall" {
+        else if call.method == "canUseFullScreenIntent" {
+            result(true)
+        }
+        else if call.method == "provideFullScreenIntentAccess" {
+            result(true)
+        }
+        else if call.method == "startCall" {
             guard let arguments = arguments else {
                 result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
                 return
             }
             let callId = arguments["session_id"] as! String
-            let muted = arguments["muted"] as! Bool
+            let callType = arguments["call_type"] as! Int
+            let callInitiatorId = arguments["caller_id"] as! Int
+            let callReceiverName = arguments["caller_name"] as! String
+            let callOpponentsString = arguments["call_opponents"] as! String
+            let callOpponents = callOpponentsString.components(separatedBy: ",").map { Int($0) ?? 0 }
+            let userInfo = arguments["user_info"] as? String
             
-            SwiftConnectycubeFlutterCallKitPlugin.callController.setMute(uuid: UUID(uuidString: callId)!, muted: muted)
+            SwiftConnectycubeFlutterCallKitPlugin.callController.startCall(handle: callReceiverName, videoEnabled: callType == 1, uuid: callId.lowercased(), callInitiatorId: callInitiatorId, opponents: callOpponents, userInfo: userInfo)
             result(true)
         }
-        else if call.method == "canUseFullScreenIntent" {
-            result(true)
-        }
-        else if call.method == "provideFullScreenIntentAccess" {
+        else if call.method == "reportOutgoingCall" {
+            guard let arguments = arguments else {
+                result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                return
+            }
+            let callId = arguments["session_id"] as! String
+            let callFinishedConnecting = arguments["finished_connecting"] as! Bool
+
+            SwiftConnectycubeFlutterCallKitPlugin.callController.reportOutgoingCall(uuid: UUID(uuidString: callId)!, finishedConnecting: callFinishedConnecting)
             result(true)
         }
         else {

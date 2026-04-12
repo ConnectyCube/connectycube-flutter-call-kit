@@ -42,7 +42,7 @@ class CallKitController : NSObject {
     private var callsData: [String:[String:Any]] = [:]
     
     override init() {
-        self.provider = CXProvider(configuration: CallKitController.providerConfiguration)
+        self.provider = CXProvider(configuration: providerConfiguration)
         self.callController = CXCallController()
         
         super.init()
@@ -50,7 +50,7 @@ class CallKitController : NSObject {
     }
     
     //TODO: construct configuration from flutter. pass into init over method channel
-    static var providerConfiguration: CXProviderConfiguration = {
+    var providerConfiguration: CXProviderConfiguration = {
         let appName = Bundle.main.infoDictionary?[kCFBundleNameKey as String] as! String
         var providerConfiguration: CXProviderConfiguration
         if #available(iOS 14.0, *) {
@@ -71,21 +71,29 @@ class CallKitController : NSObject {
         return providerConfiguration
     }()
     
-    static func updateConfig(
+    func updateConfig(
         ringtone: String?,
-        icon: String?
-        
+        icon: String?,
+        includesCallsInRecents: Bool?
     ) {
         if(ringtone != nil){
             providerConfiguration.ringtoneSound = ringtone
         }
-        
+
         if(icon != nil){
             let iconImage = UIImage(named: icon!)
             let iconData = iconImage?.pngData()
-            
+
             providerConfiguration.iconTemplateImageData = iconData
         }
+
+        if let includesCallsInRecents {
+            if #available(iOS 11.0, *) {
+                providerConfiguration.includesCallsInRecents = includesCallsInRecents
+            }
+        }
+
+        provider.configuration = providerConfiguration
     }
     
     @objc func reportIncomingCall(
@@ -262,17 +270,32 @@ extension CallKitController {
         requestTransaction(transaction)
     }
     
-    func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
-        print("[CallKitController][startCall] handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
+    func startCall(
+        handle: String,
+        videoEnabled: Bool,
+        uuid: String,
+        callInitiatorId: Int,
+        opponents: [Int],
+        userInfo: String?
+    ) {
+        print("[CallKitController][startCall] handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid)")
         
-        let handle = CXHandle(type: .generic, value: handle)
-        let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!)
-        let startCallAction = CXStartCallAction(call: callUUID!, handle: handle)
+        let cxHandle = CXHandle(type: .generic, value: handle)
+        let callUUID = UUID(uuidString: uuid)
+        let startCallAction = CXStartCallAction(call: callUUID!, handle: cxHandle)
         startCallAction.isVideo = videoEnabled
         
         let transaction = CXTransaction(action: startCallAction)
+
+        self.currentCallData["session_id"] = uuid
+        self.currentCallData["call_type"] = videoEnabled ? 1 : 0
+        self.currentCallData["caller_id"] = callInitiatorId
+        self.currentCallData["caller_name"] = handle
+        self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
+        self.currentCallData["user_info"] = userInfo
         
-        self.callStates[uuid!.lowercased()] = .accepted
+        self.callStates[uuid.lowercased()] = .accepted
+        self.callsData[uuid.lowercased()] = self.currentCallData
         
         requestTransaction(transaction);
     }
