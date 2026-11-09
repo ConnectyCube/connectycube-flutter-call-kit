@@ -1,3 +1,9 @@
+## 2.9.0
+- (iOS) Add Swift Package Manager support alongside the existing CocoaPods support;
+- (iOS) Raise minimum supported Flutter/Dart versions to `3.41.0`/`3.11.0`, required by Flutter's Swift Package Manager integration;
+- (iOS) Raise minimum iOS deployment target from `8.0` to `13.0`, matching the floor required by Flutter `3.41.0`'s engine;
+- (docs) Document that Android Gradle/AGP/Kotlin/JDK requirements are determined entirely by the consuming app's Flutter SDK version, not by this plugin; no Android build configuration changes were required for the Swift Package Manager migration;
+
 ## 2.8.2
 - (Android) Fix notification handling in Android 12 and above;
 - (Android) Migrate to using the Kotlin extensions (KTX) APIs in the main modules;

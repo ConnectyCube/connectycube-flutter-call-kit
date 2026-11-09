@@ -48,6 +48,23 @@ the plugin [`permission_handler`](https://pub.dev/packages/permission_handler).
 If your app is targeted to `targetSdkVersion 33` and above you should request the permission 
 `POST_NOTIFICATIONS` from the user first.
 
+#### Android build requirements
+
+This plugin does not pin or require a specific Gradle, Android Gradle Plugin (AGP), Kotlin Gradle Plugin,
+or JDK version. Those requirements come entirely from the version of the **Flutter SDK** your app uses, not
+from this plugin — Flutter raises its own minimum/recommended versions for these tools over time, and that
+schedule is independent of this package.
+
+Use whatever Gradle/AGP/Kotlin/JDK combination your installed Flutter SDK currently requires. The
+authoritative source for this is always your own toolchain, not this README:
+- `flutter doctor` and the warnings/errors printed during `flutter build`/`flutter run` tell you exactly
+  which versions are required or recommended for the Flutter SDK you have installed.
+- The [Flutter Android Gradle Plugin upgrade guide](https://docs.flutter.dev/release/breaking-changes/android-gradle-plugin) and
+  [Android's own AGP release notes](https://developer.android.com/build/releases/gradle-plugin) document current compatibility requirements.
+
+If your app already builds successfully with your installed Flutter SDK, no Android build configuration
+changes are needed to use this plugin.
+
 ### Prepare iOS
 
 - add next strings to your **Info.plist** file by path `your_app/ios/Runner/Info.plist`:
@@ -58,6 +75,11 @@ If your app is targeted to `targetSdkVersion 33` and above you should request th
     <string>voip</string>
 </array>
 ```
+
+This plugin supports both [Swift Package Manager](https://docs.flutter.dev/packages-and-plugins/swift-package-manager/for-plugin-authors)
+and CocoaPods for the iOS integration. Flutter automatically picks Swift Package Manager when it's enabled in your app
+(default for new apps created with Flutter 3.44 and above), otherwise CocoaPods is used — no extra configuration is required.
+Minimum requirements: Flutter 3.41.0, Dart 3.11.0, iOS 13.0.
 
 ## API and callbacks
 ### Get token

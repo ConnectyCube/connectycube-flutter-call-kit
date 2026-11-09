@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'connectycube_flutter_call_kit'
-  s.version          = '2.8.2'
+  s.version          = '2.9.0'
   s.summary          = 'Connectycube Call Kit plugin for flutter.'
   s.description      = <<-DESC
 Connectycube Call Kit plugin for flutter.
@@ -13,9 +13,9 @@ Connectycube Call Kit plugin for flutter.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'ConnectyCube' => 'support@connectycube.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'connectycube_flutter_call_kit/Sources/connectycube_flutter_call_kit/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
+  s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
