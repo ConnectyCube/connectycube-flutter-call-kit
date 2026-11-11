@@ -45,8 +45,11 @@ class ConnectycubeFlutterCallKit {
 
   /// end iOS only callbacks
 
+  // ignore: unused_field
   static CallEventHandler? _onCallRejectedWhenTerminated;
+  // ignore: unused_field
   static CallEventHandler? _onCallAcceptedWhenTerminated;
+  // ignore: unused_field
   static CallEventHandler? _onCallIncomingWhenTerminated;
 
   static CallEventHandler? _onCallAccepted;
